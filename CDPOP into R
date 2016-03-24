@@ -1,4 +1,4 @@
-######CDPOP - this is currently part of Nathan's circuitscape code (to call into R)
+######CDPOP - this is currently part of circuitscape code (to call into R); CDPOP source files available at https://github.com/ComputationalEcologyLab/CDPOP
 rm(list=ls())  #[I don't know what this is...do we need it? - cg]
 
 # load libraries [do we need to load any libraries? - cg]
@@ -11,5 +11,4 @@ setwd("") [Whatever we want to set directory to]
 
 
 ##Read in All of the cost maps previously created [What do we read in here?  The cost distance matrices? - cg]
-[maps <- list.files(path="H:\\THESISDATA\\OutputCostMaps")    #prompt user for dir containing raster files
-maps] - Nathan's code from the circuitscape r code file
+[maps <- list.files(path="C:\\...")    #prompt user for dir containing raster files maps] - Nathan's code from the circuitscape r code file
