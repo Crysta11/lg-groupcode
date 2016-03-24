@@ -10,5 +10,5 @@ CS_exe <- 'C:\\"Program Files"\\Circuitscape\\cs_run.exe' # Don't forget the "Pr
 setwd("") [Whatever we want to set directory to]
 
 
-##Read in All of the cost maps previously created [What do we read in here?  The cost distance matrices? - cg]
+##Read in All of the cost maps previously created [What do we read in here?  The cost distance matrices, other inputs - I think that these can all go into one .csv file - see Landguth documentation on github  - cg]
 [maps <- list.files(path="C:\\...")    #prompt user for dir containing raster files maps] - Nathan's code from the circuitscape r code file
