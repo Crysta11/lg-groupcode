@@ -88,3 +88,4 @@ for (i in 1:num_files){
   
   #csv file of the yx coordinates of the populations
   write.csv(para$locs, file = paste(c(gewtd(),Surfaces[i],"XYtest.csv"),collapse="",sep="")
+  }
