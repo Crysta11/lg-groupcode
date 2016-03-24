@@ -1,0 +1,15 @@
+######CDPOP - this is currently part of Nathan's circuitscape code (to call into R)
+rm(list=ls())  #[I don't know what this is...do we need it? - cg]
+
+# load libraries [do we need to load any libraries? - cg]
+library(?)
+
+# Make a place holder for the cs_run.exe [is CDPOP a .exe? - cg]
+CS_exe <- 'C:\\"Program Files"\\Circuitscape\\cs_run.exe' # Don't forget the "Program Files" problem [will we have a program files problem? - cg]
+
+setwd("") [Whatever we want to set directory to]
+
+
+##Read in All of the cost maps previously created [What do we read in here?  The cost distance matrices? - cg]
+[maps <- list.files(path="H:\\THESISDATA\\OutputCostMaps")    #prompt user for dir containing raster files
+maps] - Nathan's code from the circuitscape r code file
