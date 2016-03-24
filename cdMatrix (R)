@@ -74,7 +74,7 @@ memory.limit(size=10000)
 
 
 #Define cost distance method
-para$method <- "leastcost" #rSPDdistance, commute
+para$method <- "rSPDdistance" #leastcost, rSPDdistance, commute rSPDdistance should act as a circuitscape analog
 para$NN <- 8  #number of neighbours for the cost distance method
 
 # A)    init simulation populations from scratch
