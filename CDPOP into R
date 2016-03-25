@@ -1,10 +1,10 @@
 ######CDPOP - this is currently part of circuitscape code (to call into R); CDPOP source files available at https://github.com/ComputationalEcologyLab/CDPOP
-rm(list=ls())  #[I don't know what this is...do we need it? - cg]
+rm(list=ls())  #[I don't know what this is...do we need it? - cg]  Nathan: This removes any previous lists from R-I don't think we need it
 
-# load libraries [do we need to load any libraries? - cg]
+# load libraries [do we need to load any libraries? - cg] Nathan: ##No library is needed! This is all built into R :D
 library(?)
 
-# Make a place holder for the cs_run.exe [is CDPOP a .exe? - cg]
+# Make a place holder for the cs_run.exe [is CDPOP a .exe? - cg]  Nathan: I think it would be... 
 CS_exe <- 'C:\\"Program Files"\\Circuitscape\\cs_run.exe' # Don't forget the "Program Files" problem [will we have a program files problem? - cg]
 
 setwd("") [Whatever we want to set directory to]
