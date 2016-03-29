@@ -10,5 +10,19 @@ CS_exe <- 'C:\\"Program Files"\\Circuitscape\\cs_run.exe' # Don't forget the "Pr
 setwd("") [Whatever we want to set directory to]
 
 
-##Read in All of the cost maps previously created [What do we read in here?  The cost distance matrices, other inputs - I think that these can all go into one .csv file - see Landguth documentation on github  - cg]
-[maps <- list.files(path="C:\\...")    #prompt user for dir containing raster files maps] - Nathan's code from the circuitscape r code file
+#Paige: CDPOP into R: This is the code I have so far. It is not working: I recieve error message 127 (basically, program won't run). 
+#Any ideas? The inpputvars.csv is the only input needed for the program. 
+#I have tried two different approaches to running CDPOP:
+
+#1: based off of Nathan's code for running Circuitscape: 
+setwd("C:\\Users\\pab85_000\\Desktop\\CDPOP-master) #the folder contatining the input files and source folder
+CDPOP_exe="C:\\Users\\pab85_000\\Desktop\\CDPOP-master\\src" #the folder containing the CDPOP source files
+CDPOP_run=paste(CDPOP_exe, paste(getwd(), "C:\\Users\\pab85_000\\Desktop\\CDPOP-master\\Data\\inputvars_test.csv", sep="/"))
+system(CDPOP_run)
+
+2: based on code I found online for calling python in R:
+system("python C:\\Users\\pab85_000\\Desktop\\CDPOP-master\\src\\CDPOP.py inputvars_test.csv output_test")
+#Recieved this error message: 
+User must specify data directory, input file name, and output file directory (e.g., at command line type CDPOP.py ../CDPOP_data/ inputvariables16pnts.csv exampleout).
+Warning message:
+running command 'python C:\Users\pab85_000\Desktop\CDPOP-master\src\CDPOP.py inputvars_test.csv output_test' had status 65535 
