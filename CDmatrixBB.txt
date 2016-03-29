@@ -8,26 +8,20 @@ require(PopGenReport)
 require(gstudio)
 require(rgeos)
 
+#"trick" R into thinking you have enough memory to generate the cd matrix 
+memory.limit(size=10000)
+
 #Set working directory to where the raster files are.
 #Load a raster
-
 r <- raster("MapGen0.1_0.1MAP.txt.img")
-
 summary(r)
 
 #make a plot of the raster
 plot(r)
 
-#Table gives #rows, #cols, extent
-table(r)
-
-r
-
-
 ##This was in the WK8 lab, I guess we might change this? #set non-habitat to friction values of 10
 values(r)[is.na(values(r))==T]<-10
 plot(r)
-
 
 #Create function to put populations on the raster. 
 
@@ -65,11 +59,8 @@ createpops <- function(n, mindist, landscape, plot=TRUE)
   return( as.matrix( coords))
 }
 
-
-
 #test the function above.....
 createpops(n=8, mindist = 3, landscape = r, plot = TRUE)
-
 
 #Define Metapopulation.  Again this is from the Wk8 lab.
 para<- list()
@@ -77,14 +68,12 @@ para<- list()
 para$n.pops=8
 para$n.ind=10
 
-
 #Define cost distance method
 para$method <- "leastcost" #rSPDdistance, commute
 para$NN <- 8  #number of neighbours for the cost distance method
 
 # A)    init simulation populations from scratch
 landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
-
 
 #Define x and y locations
 para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r, plot = TRUE)
@@ -114,7 +103,6 @@ points(para$locs)
 
 landscape <- bc
 
-
 #Create convex hull
 
 capepoint <- SpatialPoints(para$locs)
@@ -126,14 +114,12 @@ plot(hull, add=T, border="green")
 hullbuffer <- gBuffer(hull, width=10000)
 plot(hullbuffer, add=T, border="red")
 
-
-
 #create a costdistance matrix 
 cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
 ##I haven't tried this one yet:  eucl.mat <- as.matrix(dist(para$locs))  #needed for the analysis later
 
 
-#Create a .csv file that can be used by CDPOP  ##I don't know how to get rid of the column names
+#Create a .csv file that can be used by CDPOP  
 write.csv(cost.mat, file="testcdmatrix.csv", row.names = FALSE)
 
 #csv file of the yx coordinates of the populations
