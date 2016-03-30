@@ -20,7 +20,8 @@ summary(r)
 plot(r)
 
 ##This was in the WK8 lab, I guess we might change this? #set non-habitat to friction values of 10
-values(r)[is.na(values(r))==T]<-10
+values(r)[(values(r))==1]<-10
+values(r)[(values(r))==0]<-1
 plot(r)
 
 #Create function to put populations on the raster. 
