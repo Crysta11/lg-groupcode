@@ -1,0 +1,146 @@
+#Install packages
+#Load packages
+install.packages("secr")
+install.packages("gdistance")
+install.packages("raster")
+install.packages("sp")
+install.packages("PopGenReport")
+install.packages("gstudio")
+install.packages("rgeos")
+require(secr)
+require(gdistance)
+require(raster)
+require(sp)
+require(PopGenReport)
+require(gstudio)
+require(rgeos)
+
+#"trick" R into thinking you have enough memory to generate the cd matrix 
+memory.limit(size=10000)
+
+#Set working directory to where the raster files are.
+#Load a raster
+
+setwd(choose.dir())
+
+
+Maps<-list.files()	##list all files in the raster directory
+length(Maps)
+Maps
+
+
+##Because img files, there are 2 file associations/map, 
+##so we will subset to every other
+
+
+MapOnly<-Maps[c(TRUE, FALSE)]
+MapOnly		##should only be img files
+
+##Create Population Function-From LDG homework code
+
+createpops <- function(n, mindist, landscape, plot=TRUE)
+{  
+  
+  minx <- extent(landscape)@xmin #get the min and max  coordinates
+  miny <- extent(landscape)@ymin #coordinates of the landscape
+  maxx <- extent(landscape)@xmax
+  maxy <- extent(landscape)@ymax
+  
+  cc<- 1
+  coords <- data.frame(lx=NA, ly=NA)
+  while (cc<= n )  #repeat until you have found n locations
+  {
+    draw=FALSE
+    while (draw==FALSE)
+    {
+      x <- runif(1,minx,maxx)
+      y <- runif(1,miny,maxy)
+      if (landscape[cellFromXY(landscape,c(x,y) )]==1)  draw=TRUE #check if in the habitat
+    }
+    
+    coords[cc,] <- c(x,y)
+    
+    if (nrow(coords)>1) d <- min(dist(coords)) else d <- mindist+1 
+    
+    if (d > mindist) cc <- cc+1  #take the location only if distance is larger than mindist
+  }
+  if (plot==TRUE) 
+  {
+    plot(landscape)  
+    points(coords, pch=16)
+  }
+  return( as.matrix( coords))
+}
+
+
+###################Computation intensive############
+## for-loop to calculate distance matrices
+
+for(i in 1:length(MapOnly)){
+r <- raster(MapOnly[i])
+
+##This was in the WK8 lab, I guess we might change this? 
+##set non-habitat to friction values of 10, and habitat to 1 for Circuit based-analyses
+
+values(r)[(values(r))==1]<-10
+values(r)[(values(r))==0]<-1
+plot(r)
+
+createpops(n=8, mindist = 3, landscape = r, plot = TRUE)
+
+#Define Metapopulation.  Again this is from the Wk8 lab.
+para<- list()
+#Define populations (dynamics)
+para$n.pops=8
+para$n.ind=100
+
+#Define cost distance method
+para$method <- "leastcost" #rSPDdistance, commute
+para$NN <- length(para$n.pops)  #number of neighbours for the cost distance method
+
+# A)    init simulation populations from scratch
+landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
+
+#Define x and y locations
+para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r, plot = TRUE)
+#give the population some names 
+rownames(para$locs) <- LETTERS[1:para$n.pops]
+
+#Create a bounding box to facilitate computation time
+
+#lon.min <- min(para$locs[,1])
+#lon.max <- max(para$locs[,1])
+#lat.min <- min(para$locs[,2])
+#lat.max <- max(para$locs[,2])
+
+#e <- extent(lon.min, lon.max, lat.min, lat.max)
+
+#e <- extent(lon.min-100, lon.max+100, lat.min-100, lat.max+100)
+
+#alt <- raster(MapOnly[i])
+#bc <- crop(alt, e)
+
+#plot(bc)
+#points(para$locs,pch=17)
+
+#landscape <- bc
+
+#Create convex hull
+
+capepoint <- SpatialPoints(para$locs)
+hull <- gConvexHull(capepoint)
+
+hull
+hullbuffer <- gBuffer(hull, width=10000)
+
+#create a costdistance matrix 
+cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
+##I haven't tried this one yet:  eucl.mat <- as.matrix(dist(para$locs))  #needed for the analysis later
+
+
+#Create a .csv file that can be used by CDPOP  
+write.csv(cost.mat, file=paste(c("C:\\FILENAME\\",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
+
+#csv file of the yx coordinates of the populations
+write.csv(para$locs, file =paste(c("C:\\FILENAME\\XY",MapOnly[i],".csv"),sep="",collapse=""))
+}
