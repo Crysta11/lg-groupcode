@@ -38,7 +38,7 @@ MapOnly		##should only be img files
 
 ##Create Population Function-From LDG homework code
 
-createpops <- function(n, mindist, landscape, plot=TRUE)
+createpops <- function(n, mindist, landscape)
 {  
   
   minx <- extent(landscape)@xmin #get the min and max  coordinates
