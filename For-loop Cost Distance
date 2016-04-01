@@ -86,13 +86,13 @@ values(r)[(values(r))==1]<-10
 values(r)[(values(r))==0]<-1
 plot(r)
 
-createpops(n=8, mindist = 3, landscape = r, plot = TRUE)
+createpops(n=100, mindist = 3, landscape = r, plot = TRUE) ##Treat Pops as individuals?
 
 #Define Metapopulation.  Again this is from the Wk8 lab.
 para<- list()
 #Define populations (dynamics)
-para$n.pops=8
-para$n.ind=100
+para$n.pops=100
+para$n.ind=1 #each pop is considered 1 individual
 
 #Define cost distance method
 para$method <- "leastcost" #rSPDdistance, commute
