@@ -95,7 +95,7 @@ para$n.ind=1 #each pop is considered 1 individual
 
 #Define cost distance method
 para$method <- "leastcost" #rSPDdistance, commute
-para$NN <- length(para$n.pops)  #number of neighbours for the cost distance method
+para$NN <- 8)  #number of neighbours for the cost distance method ### I think this is direction moveable through cells-I set it to 8
 
 # A)    init simulation populations from scratch
 landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
