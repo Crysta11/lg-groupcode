@@ -130,7 +130,6 @@ rownames(para$locs) <- LETTERS[1:para$n.pops]
 capepoint <- SpatialPoints(para$locs)
 hull <- gConvexHull(capepoint)
 
-hull
 hullbuffer <- gBuffer(hull, width=10000)
 
 #create a costdistance matrix 
