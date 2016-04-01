@@ -84,7 +84,6 @@ r <- raster(MapOnly[i])
 
 values(r)[(values(r))==1]<-10
 values(r)[(values(r))==0]<-1
-plot(r)
 
 createpops(n=100, mindist = 3, landscape = r, plot = TRUE) ##Treat Pops as individuals?
 
