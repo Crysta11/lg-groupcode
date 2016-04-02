@@ -64,14 +64,10 @@ createpops <- function(n, mindist, landscape)
     
     if (d > mindist) cc <- cc+1  #take the location only if distance is larger than mindist
   }
-  if (plot==TRUE) 
-  {
-    plot(landscape)  
-    points(coords, pch=16)
-  }
-  return( as.matrix( coords))
+   return( as.matrix( coords))
 }
 
+###Took out the "if plot == TRUE" statement from the code
 
 ###################Computation intensive############
 ## for-loop to calculate distance matrices
@@ -85,8 +81,6 @@ r <- raster(MapOnly[i])
 values(r)[(values(r))==1]<-10
 values(r)[(values(r))==0]<-1
 
-createpops(n=100, mindist = 3, landscape = r, plot = TRUE) ##Treat Pops as individuals?
-
 #Define Metapopulation.  Again this is from the Wk8 lab.
 para<- list()
 #Define populations (dynamics)
@@ -94,16 +88,14 @@ para$n.pops=100
 para$n.ind=1 #each pop is considered 1 individual
 
 #Define cost distance method
-para$method <- "leastcost" #rSPDdistance, commute
+para$method <- "commute" #rSPDdistance, commute-Commute is the Circuitscape one
 para$NN <- 8)  #number of neighbours for the cost distance method ### I think this is direction moveable through cells-I set it to 8
 
 # A)    init simulation populations from scratch
 landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
 
 #Define x and y locations
-para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r, plot = TRUE)
-#give the population some names 
-rownames(para$locs) <- LETTERS[1:para$n.pops]
+para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r)
 
 #Create a bounding box to facilitate computation time
 
@@ -130,7 +122,7 @@ capepoint <- SpatialPoints(para$locs)
 hull <- gConvexHull(capepoint)
 
 hullbuffer <- gBuffer(hull, width=10000)
-
+landscape<-crop(r,hullbuffer)
 #create a costdistance matrix 
 cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
 ##I haven't tried this one yet:  eucl.mat <- as.matrix(dist(para$locs))  #needed for the analysis later
