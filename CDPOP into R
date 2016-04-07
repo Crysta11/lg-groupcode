@@ -30,5 +30,5 @@ running command 'python C:\Users\pab85_000\Desktop\CDPOP-master\src\CDPOP.py inp
 ##############  Running CDPOP in R #######
 ##Set your working directory to CDPOP-master, then run the next 2 lines of code
 
-> cmd <- "python src/CDPOP.py data inputvars.csv output_test10"
-> system(cmd, wait=FALSE)
+cmd <- "python src/CDPOP.py data inputvars.csv output_test10"
+system(cmd, wait=FALSE)
