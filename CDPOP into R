@@ -26,3 +26,9 @@ system("python C:\\Users\\pab85_000\\Desktop\\CDPOP-master\\src\\CDPOP.py inputv
 User must specify data directory, input file name, and output file directory (e.g., at command line type CDPOP.py ../CDPOP_data/ inputvariables16pnts.csv exampleout).
 Warning message:
 running command 'python C:\Users\pab85_000\Desktop\CDPOP-master\src\CDPOP.py inputvars_test.csv output_test' had status 65535 
+
+##############  Running CDPOP in R #######
+##Set your working directory to CDPOP-master, then run the next 2 lines of code
+
+> cmd <- "python src/CDPOP.py data inputvars.csv output_test10"
+> system(cmd, wait=FALSE)
