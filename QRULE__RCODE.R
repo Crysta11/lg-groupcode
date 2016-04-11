@@ -20,8 +20,11 @@ Hvalues<-c(.1,.2,.3,.4,.5,.6,.7,.8,.9)
 p1values<-c(.1,.2,.3,.4,.5,.6,.7,.8,.9)
 
 ##Execute all combinations of contagion and habitat probabilities
-
-for(i in 1:length(Hvalues)){
+Perms<-c(1:10)      #10 Permutations per map configuration
+Perms
+for(k in 1:length(Perms)){
+  
+  for(i in 1:length(Hvalues)){
     Map<-"M"
     Level<-11
     Contagion<-Hvalues[i]
@@ -29,27 +32,29 @@ for(i in 1:length(Hvalues)){
     neg.seed<--634535
     neighbor<-2
     MapClass<-1
-        
-    for(j in 1:length(p1values)){
-          p1<-p1values[j]
-          p2<-1-p1values[j]
-          reps<-1
-          MapOut<-"G"
-          Name<-paste(c("MapGen",Hvalues[i],"_",p1values[j]),sep="",collapse="")
-          Analysis<-"N"
-          Res<-30
-
-    Qinput<-c(Map,Level,Contagion,Wrap,neg.seed,neighbor,MapClass,
-             p1,p2,reps,MapOut,paste(c(Name,".txt"),sep="",collapse=""),Analysis,Res)
-
-    system(Qrule_exe,input=Qinput)
-
-## rename the arcgrid.map file so that it won't be overwritten
-
-        file.rename("arcgrid.map", paste("Maps\\",Name,"MAP.txt",sep="",collapse=" "))
   
-      }
-
+      for(j in 1:length(p1values)){
+        p1<-p1values[j]
+        p2<-1-p1values[j]
+        reps<-1
+        MapOut<-"G"
+        Name<-paste(c(Perms[k],"MapGen",Hvalues[i],"_",p1values[j]),sep="",collapse="")
+        Analysis<-"N"
+        Res<-30
+    
+        Qinput<-c(Map,Level,Contagion,Wrap,neg.seed,neighbor,MapClass,
+                  p1,p2,reps,MapOut,paste(c(Name,".txt"),sep="",collapse=""),Analysis,Res)
+    
+        system(Qrule_exe,input=Qinput)
+    
+    ## rename the arcgrid.map file so that it won't be overwritten
+    
+    file.rename("arcgrid.map", paste("Maps\\",Name,"MAP.txt",sep="",collapse=" "))
+    
+     }
+  
+  }
+  
 }
 
 ##import the maps int ArcMaps, then ASCII to Raster function
@@ -61,7 +66,6 @@ setwd("C:\\Users\\nba52\\Desktop\\QRULE\\Maps\\")
 Maps<-list.files()
 Maps
 for(i in 1:length(Maps)){
-    map<-raster(Maps[i])
-    writeRaster(map,paste(c(getwd(),Maps[i],".img"),sep="",collapse=""),format="HFA")
+  map<-raster(Maps[i])
+  writeRaster(map,paste(c(getwd(),Maps[i],".img"),sep="",collapse=""),format="HFA")
 }
-
