@@ -97,31 +97,11 @@ landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
 #Define x and y locations
 para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r)
 
-#give the population some names 
-
-#Create a bounding box to facilitate computation time
-
-#lon.min <- min(para$locs[,1])
-#lon.max <- max(para$locs[,1])
-#lat.min <- min(para$locs[,2])
-#lat.max <- max(para$locs[,2])
-
-#e <- extent(lon.min, lon.max, lat.min, lat.max)
-
-#e <- extent(lon.min-100, lon.max+100, lat.min-100, lat.max+100)
-
-#alt <- raster(MapOnly[i])
-#bc <- crop(alt, e)
-
-#plot(bc)
-#points(para$locs,pch=17)
-
-#landscape <- bc
 
 #Create convex hull
 
-capepoint <- SpatialPoints(para$locs)
-hull <- gConvexHull(capepoint)
+conhull <- SpatialPoints(para$locs)
+hull <- gConvexHull(conhull)
 
 hullbuffer <- gBuffer(hull, width=10000)
 landscape<-crop(r,hullbuffer)
@@ -129,11 +109,11 @@ landscape<-crop(r,hullbuffer)
 #create a costdistance matrix 
 cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
 
-##I haven't tried this one yet:  eucl.mat <- as.matrix(dist(para$locs))  #needed for the analysis later
 
 
 #Create a .csv file that can be used by CDPOP  
-write.csv(cost.mat, file=paste(c("C:\\Users\\nba52\\Desktop\\",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
+#Write.table allows you to eliminate column names whereas write.csv does not
+write.table(cost.mat, file =paste(c("costdistance",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
 
 #csv file of the yx coordinates of the populations
 write.csv(para$locs, file =paste(c("C:\\Users\\nba52\\Desktop\\XY",MapOnly[i],".csv"),sep="",collapse=""))
