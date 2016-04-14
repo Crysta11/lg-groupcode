@@ -1,3 +1,4 @@
+
 #Install packages
 #Load packages
 install.packages("secr")
@@ -64,11 +65,10 @@ createpops <- function(n, mindist, landscape)
     
     if (d > mindist) cc <- cc+1  #take the location only if distance is larger than mindist
   }
-   return( as.matrix( coords))
+    return( as.matrix( coords))
 }
 
-###Took out the "if plot == TRUE" statement from the code
-
+cd.mat<-NA 
 ###################Computation intensive############
 ## for-loop to calculate distance matrices
 
@@ -84,18 +84,20 @@ values(r)[(values(r))==0]<-1
 #Define Metapopulation.  Again this is from the Wk8 lab.
 para<- list()
 #Define populations (dynamics)
-para$n.pops=100
+para$n.pops=1000
 para$n.ind=1 #each pop is considered 1 individual
 
 #Define cost distance method
-para$method <- "commute" #rSPDdistance, commute-Commute is the Circuitscape one
-para$NN <- 8)  #number of neighbours for the cost distance method ### I think this is direction moveable through cells-I set it to 8
+para$method <- "commute" #rSPDdistance, commute
+para$NN <- 8  #number of neighbours for the cost distance method ### I think this is direction moveable through cells-I set it to 8
 
 # A)    init simulation populations from scratch
 landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
 
 #Define x and y locations
 para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r)
+
+#give the population some names 
 
 #Create a bounding box to facilitate computation time
 
@@ -123,14 +125,16 @@ hull <- gConvexHull(capepoint)
 
 hullbuffer <- gBuffer(hull, width=10000)
 landscape<-crop(r,hullbuffer)
+
 #create a costdistance matrix 
 cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
+
 ##I haven't tried this one yet:  eucl.mat <- as.matrix(dist(para$locs))  #needed for the analysis later
 
 
 #Create a .csv file that can be used by CDPOP  
-write.csv(cost.mat, file=paste(c("C:\\FILENAME\\",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
+write.csv(cost.mat, file=paste(c("C:\\Users\\nba52\\Desktop\\",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
 
 #csv file of the yx coordinates of the populations
-write.csv(para$locs, file =paste(c("C:\\FILENAME\\XY",MapOnly[i],".csv"),sep="",collapse=""))
+write.csv(para$locs, file =paste(c("C:\\Users\\nba52\\Desktop\\XY",MapOnly[i],".csv"),sep="",collapse=""))
 }
