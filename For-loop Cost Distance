@@ -1,4 +1,5 @@
 
+
 #Install packages
 #Load packages
 install.packages("secr")
@@ -65,56 +66,71 @@ createpops <- function(n, mindist, landscape)
     
     if (d > mindist) cc <- cc+1  #take the location only if distance is larger than mindist
   }
-    return( as.matrix( coords))
+  return( as.matrix( coords))
 }
 
-cd.mat<-NA 
+#cd.mat<-NA 
 ###################Computation intensive############
 ## for-loop to calculate distance matrices
 
 for(i in 1:length(MapOnly)){
-r <- raster(MapOnly[i])
+  r <- raster(MapOnly[i])
 
-##This was in the WK8 lab, I guess we might change this? 
-##set non-habitat to friction values of 10, and habitat to 1 for Circuit based-analyses
-
-values(r)[(values(r))==1]<-10
-values(r)[(values(r))==0]<-1
-
-#Define Metapopulation.  Again this is from the Wk8 lab.
-para<- list()
+  ##This was in the WK8 lab, I guess we might change this? 
+  ##set non-habitat to friction values of 10, and habitat to 1 for Circuit based-analyses
+  
+  values(r)[(values(r))==1]<-10
+  values(r)[(values(r))==0]<-1
+  
+  #Define Metapopulation.  Again this is from the Wk8 lab.
+  para<- list()
 #Define populations (dynamics)
-para$n.pops=1000
-para$n.ind=1 #each pop is considered 1 individual
+para$n.pops=100
+para$n.ind=10 #each pop is considered 1 individual
 
-#Define cost distance method
-para$method <- "commute" #rSPDdistance, commute
-para$NN <- 8  #number of neighbours for the cost distance method ### I think this is direction moveable through cells-I set it to 8
+  
+  #Define cost distance method
+  para$method <- "commute" #rSPDdistance, commute
+  para$NN <- 8  #number of neighbours for the cost distance method ### I think this is direction moveable through cells-I set it to 8
+  
+  # A)    init simulation populations from scratch
+  landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
+  
+  #Define x and y locations
+ para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r)
 
-# A)    init simulation populations from scratch
-landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
+  
+  #Create convex hull
+  
+  conhull <- SpatialPoints(para$locs)
+  hull <- gConvexHull(conhull)
+  
+  hullbuffer <- gBuffer(hull, width=10000)
+  landscape<-crop(r,hullbuffer)
+  
+  #create a costdistance matrix 
+  cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
+  
+  
+  
+  #Create a .table file that can be used by CDPOP  
+  #Write.table allows you to eliminate column names whereas write.csv does not
+  write.table(cost.mat, file =paste(c("C://Users//nba52//Desktop//","costdistance",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  
+  
+initial<-NA
+for(j in 1:(para$n.pops*para$n.ind)){
+	init<-paste(c("initial",j),sep="",collapse="")
+	initial<-na.omit(rbind(initial,init))
+} 
 
-#Define x and y locations
-para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r)
 
+Individuals<-data.frame(1:para$n.pops,rep(para$locs[,1],para$n.ind),rep(para$locs[,2],para$n.ind),initial[,1],
+		sample(c(0,1),para$n.pops*para$n.ind,replace=TRUE),50,1:(para$n.pops*para$n.ind),100,0,0,0,0,0,0,0,0,0)
 
-#Create convex hull
+colnames(Individuals)<-c("Subpopulation","lx","ly","ID","sex","Fitness_AA","Fitness_Aa","Fitness_aa","Fitness_AABB",
+		"Fitness_AaBB","Fitness_aaBB","Fitness_AABb","Fitness_AaBb","Fitness_aaBb","Fitness_AAbb","Fitness_Aabb","Fitness_aabb")
 
-conhull <- SpatialPoints(para$locs)
-hull <- gConvexHull(conhull)
+write.csv(Individuals, file =paste(c("C:\\Users\\nba52\\Desktop\\XY",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
 
-hullbuffer <- gBuffer(hull, width=10000)
-landscape<-crop(r,hullbuffer)
-
-#create a costdistance matrix 
-cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
-
-
-
-#Create a .csv file that can be used by CDPOP  
-#Write.table allows you to eliminate column names whereas write.csv does not
-write.table(cost.mat, file =paste(c("costdistance",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-
-#csv file of the yx coordinates of the populations
-write.csv(para$locs, file =paste(c("C:\\Users\\nba52\\Desktop\\XY",MapOnly[i],".csv"),sep="",collapse=""))
 }
