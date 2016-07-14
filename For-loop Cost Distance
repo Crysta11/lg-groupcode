@@ -124,7 +124,7 @@ for(i in 1:length(MapOnly)){
 						 rep(para$locs[,1],para$n.ind),rep(para$locs[,2],para$n.ind), #assign XY coordinates to individuals
 						 initial[,1], #assign uniqu IDs for individuals
              sample(c(0,1),para$n.pops*para$n.ind,replace=TRUE),#assign sex to F or M randomly
-						 50,1:(para$n.pops*para$n.ind),100,0,0,0,0,0,0,0,0,0) #assign allele fitness frequencies
+						 0,0,0,0,0,0,0,0,0,0,0,0) #assign allele fitness frequencies
   
   colnames(Individuals)<-c("Subpopulation","lx","ly","ID","sex","Fitness_AA","Fitness_Aa","Fitness_aa","Fitness_AABB",
                            "Fitness_AaBB","Fitness_aaBB","Fitness_AABb","Fitness_AaBb","Fitness_aaBb","Fitness_AAbb","Fitness_Aabb","Fitness_aabb")
