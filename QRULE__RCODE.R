@@ -26,7 +26,7 @@ for(k in 1:length(Perms)){
   
   for(i in 1:length(Hvalues)){
     Map<-"M"
-    Level<-11
+    Level<-9
     Contagion<-Hvalues[i]
     Wrap<-"F"
     neg.seed<--634535
