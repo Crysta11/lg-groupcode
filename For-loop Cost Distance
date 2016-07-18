@@ -149,7 +149,7 @@ for(i in 1:length(MapOnly)){
   
   #Create a .table file that can be used by CDPOP  
   #Write.table allows you to eliminate column names whereas write.csv does not
-  write.table(cost.mat, file =paste(c("C://Users//nba52//Desktop//","costdistance",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(Ind, file =paste(c("C://Users//nba52//Desktop//","costdistance",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
   
 }
 
