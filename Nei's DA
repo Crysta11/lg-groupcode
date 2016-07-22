@@ -1,0 +1,49 @@
+##Read in Allele frequency data from CDPop
+
+ADat<-read.csv(choose.files())
+head(ADat)
+
+##strataG can calculate Nei's DA
+
+install.packages("strataG")
+require(strataG)
+
+dim(ADat)
+
+##Individuals have duplicate IDs, so create a column of unique IDs
+##FOLLOW UP ON WHY THIS HAPPENED?
+
+Ind<-1:1000
+Adat<-cbind(Ind,ADat)
+##Check the new file
+
+head(Adat[,1:9])
+head(ADat[,1:8],30)
+
+##Convert dataframe to a gtype class
+	##IDs are in the first column
+	##there are 30 alleles/loci
+	##the loci data starts on colmn 10 now
+
+GenG<-df2gtypes(Adat,ploidy=30,id.col=1,loc.col=10)
+
+##Calculate Nei's DA from the gtype object
+
+NDAGenG<-neiDa(GenG)
+
+##create a dist matrix from the Nei's DA output
+
+## for 20 populations, so M matrix is 20x20
+
+head(NDAGenG)
+
+	M<-matrix(NA,ncol=20,nrow=20)
+	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
+	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
+	M[is.na(M)]<-0
+
+  row.names(M)<-1:20
+  colnames(M)<-1:20
+  
+write.csv(M,"C:\\Users\\nba52\\Desktop\\NeisDA.csv")
+
