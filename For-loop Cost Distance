@@ -102,6 +102,7 @@ for(i in 1:length(MapOnly)){
 
   #Create convex hull
   
+
   conhull <- SpatialPoints(para$locs)
   hull <- gConvexHull(conhull)
   
@@ -130,7 +131,8 @@ for(i in 1:length(MapOnly)){
                            "Fitness_AaBB","Fitness_aaBB","Fitness_AABb","Fitness_AaBb","Fitness_aaBb","Fitness_AAbb","Fitness_Aabb","Fitness_aabb")
   
   write.csv(Individuals, file =paste(c("C:\\Users\\nba52\\Desktop\\XY",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
- 
+
+)
   #create a costdistance matrix for individuals from subpopulation distances
   
   cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
@@ -145,11 +147,33 @@ for(i in 1:length(MapOnly)){
       Ind[i,j]<-model[Individuals[i,1],Individuals[j,1]]
     }
   }
-  
-  
+
+#####################
+###IBD CALCULATION###
+#####################
+
+IBD<-landscape
+values(IBD)<-1
+
+  IBD.mat <- costdistances(IBD, para$locs, para$method, para$NN) #needed for the simulation
+
+  #Define x and y locations
+  model<-IBD.mat
+
+  IBD.ind<-matrix(NA,ncol=length(Individuals$Subpopulation),nrow=length(Individuals$Subpopulation)) ##Create a null matrix of length of individuals
+  for(i in 1:length(Individuals$Subpopulation)){
+    
+    for(j in 1:length(Individuals$Subpopulation)){
+      
+      IBD.ind[i,j]<-model[Individuals[i,1],Individuals[j,1]]
+    }
+  }
+
+
   #Create a .table file that can be used by CDPOP  
   #Write.table allows you to eliminate column names whereas write.csv does not
   write.table(Ind, file =paste(c("C://Users//nba52//Desktop//","costdistance",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  
-}
+  write.table(IBD.ind, file =paste(c("C://Users//nba52//Desktop//","IBD",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.csv(Individuals, file =paste(c("C:\\Users\\nba52\\Desktop\\XY",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
 
+}
