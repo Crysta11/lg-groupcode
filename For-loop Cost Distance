@@ -25,7 +25,6 @@ setwd(choose.dir())
 
 Maps<-list.files()	##list all files in the raster directory
 length(Maps)
-Maps
 
 
 ##Because img files, there are 2 file associations/map, 
@@ -33,7 +32,7 @@ Maps
 
 
 MapOnly<-Maps[c(TRUE, FALSE)]
-MapOnly		##should only be img files, this selects only the rasters
+		##should only be img files, this selects only the rasters
 
 ##Create Population Function-From LDG homework code
 
@@ -72,17 +71,18 @@ createpops <- function(n, mindist, landscape)
 
 for(i in 1:length(MapOnly)){
   r <- raster(MapOnly[i])
-  
+
   ##set non-habitat to friction values of 10, and habitat to 1 for Circuit based-analyses
   
   values(r)[(values(r))==1]<-10
   values(r)[(values(r))==0]<-1
   
   #Define Metapopulation.  Again this is from the Wk8 lab.
+
   para<- list()
   #Define populations (dynamics)
-  para$n.pops=20 # set the number of unique locations for the populations
-  para$n.ind=50 # set the number of individuals per population
+  para$n.pops=3 # set the number of unique locations for the populations
+  para$n.ind=3 # set the number of individuals per population
   
   
   #Define cost distance method
@@ -130,9 +130,6 @@ for(i in 1:length(MapOnly)){
   colnames(Individuals)<-c("Subpopulation","lx","ly","ID","sex","Fitness_AA","Fitness_Aa","Fitness_aa","Fitness_AABB",
                            "Fitness_AaBB","Fitness_aaBB","Fitness_AABb","Fitness_AaBb","Fitness_aaBb","Fitness_AAbb","Fitness_Aabb","Fitness_aabb")
   
-  write.csv(Individuals, file =paste(c("C:\\Users\\nba52\\Desktop\\XY",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
-
-)
   #create a costdistance matrix for individuals from subpopulation distances
   
   cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
@@ -175,5 +172,6 @@ values(IBD)<-1
   write.table(Ind, file =paste(c("C://Users//nba52//Desktop//","costdistance",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
   write.table(IBD.ind, file =paste(c("C://Users//nba52//Desktop//","IBD",MapOnly[i],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
   write.csv(Individuals, file =paste(c("C:\\Users\\nba52\\Desktop\\XY",MapOnly[i],".csv"),sep="",collapse=""), row.names = FALSE)
+
 
 }
