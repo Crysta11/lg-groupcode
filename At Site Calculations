@@ -1,0 +1,51 @@
+###############################################################################
+# CLASS LEVEL LANDSCAPE METRICS 
+#   MODEL ITTERATES TRHOUGH EACH POINT AND, BASED ON DISTANCE, CALCULATES 
+#     LANDSCAPE METRICS
+#  
+# VALUES
+#     PLAND = percent landscape [4]
+#     PAFD = Perimeter/Area Fractal Dimension [14]
+#     PLA = Proportion Like Adjacencies	[33]
+#     AI = Aggregation Index [34] 
+#     LDI = Lanscape Division Index [35]
+#     EMS = Effective Mesh Size [37] 
+#     PCI = Patch Cohesion Index [38] 
+###############################################################################			
+
+require(sp)
+install.packages("SDMTools")
+require(SDMTools)
+require(rgdal)
+require(raster)
+
+bw=8*30 #8 cells, each of 30m
+
+
+####################################
+###Don't know if we need the following
+
+##inshape=pops
+##inraster=r
+##outshape="SiteMetrics"
+##metrics=c(4,14,33,34,35,37,38)
+##mnames <- c("PLAND", "PAFD", "PLA", "AI", "LDI", "EMS", "PCI")
+##########################
+
+mraster <- r #read in R before converting to 1 and 10
+xy<-data.frame(para$locs)
+
+length(xy[,1])
+results <- as.data.frame(array(0, dim=c( 0, length(metrics) )))
+  for(j in 1:length(xy[,1])) {
+    lsub <- xy[j,]
+points(lsub,cex=4,pch=17,col="red")
+      f <- extract(mraster, lsub, buffer=bw, na.rm=FALSE, cellnumbers=TRUE)
+       x <- rasterFromCells(mraster, f[[1]][,1], values=TRUE)
+    cr <- crop(mraster, x)
+	  LM <- ClassStat(cr,cellsize=30,bkgd=1) #background values are 1
+     results <- rbind(results, LM)	  
+   }
+
+write.csv(results, "C:\\Users\\nba52\\Desktop\\results.csv")
+
