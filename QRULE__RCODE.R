@@ -1,5 +1,7 @@
 install.packages("raster")
+install.packages("rgdal")
 require(raster)
+require(rgdal)
 ##Assign where QRULE is saved and can be executed
 
 Qrule_exe<-paste("C:\\Users\\nba52\\Desktop\\QRULE\\QruleV4.exe")
