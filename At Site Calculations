@@ -9,15 +9,25 @@ bw=16*30 #16 cells, each of 30m; may want to only do 8?
 ##########################
 
 
-setwd(choose.dir())
+setwd(choose.dir()) #choose where the map files are saved
+Maps<-list.files()
+MapsOnly<-Maps[c(TRUE,FALSE)]
 
-##Read in map file##
-r<-raster(choose.files())
+
+##Read in map files##
+
+for(i in 1:length(MapsOnly){
+
+setwd( #choose where map files are)
+r<-raster(MapsOnly[i])
 mraster <- r #read in R before converting to 1 and 10
 
 ##read in CDPOP input file,will subset into only coordinates##
 
-xy<-read.csv(choose.files())
+
+setwd(#choose where CDPOP files are saved)
+Coords<-list.files()
+xy<-read.csv(Coords[i])
 xy<-data.frame(xy[,2:3])
 
 ##get only the unique location for each pop
@@ -26,7 +36,7 @@ uxy<-unique(xy)
 
 ##create a null data frame
 
-results <- as.data.frame(array(NA, dim=c( length(uxy[,1], 38 )))
+results <- as.data.frame(array(NA, dim=c( 40, 38 )))
 
 ##for loop to fill in data frame with FRAGSTAT output
 ##since some pops have no non-habitat, need to omit NULL outputs
@@ -49,5 +59,5 @@ results <- as.data.frame(array(NA, dim=c( length(uxy[,1], 38 )))
 
 colnames(results)<-colnames(LM)
 
-write.csv(results, "C:\\Users\\Nathan\\Desktop\\results.csv")
-
+write.csv(results, paste(c("C:\\Users\\Nathan\\Desktop\\AtSite",MapOnly[i],".csv"),collapse="",sep="")
+}
