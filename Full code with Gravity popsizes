@@ -1,0 +1,244 @@
+rm(list=ls(all=TRUE))
+
+require(secr)
+require(gdistance)
+require(raster)
+require(sp)
+require(PopGenReport)
+require(gstudio)
+require(rgeos)
+library(SDMTools)
+
+
+
+Maps<-list.files(pattern=".img")	##list all files in the raster directory
+length(Maps)
+
+
+
+
+##Create Population Function-From LDG homework code
+
+createpops <- function(n, mindist, landscape)
+{  
+  
+  minx <- extent(landscape)@xmin #get the min and max  coordinates
+  miny <- extent(landscape)@ymin #coordinates of the landscape
+  maxx <- extent(landscape)@xmax
+  maxy <- extent(landscape)@ymax
+  
+  cc<- 1
+  coords <- data.frame(lx=NA, ly=NA)
+  while (cc<= n )  #repeat until you have found n locations
+  {
+    draw=FALSE
+    while (draw==FALSE)
+    {
+      x <- runif(1,minx,maxx)
+      y <- runif(1,miny,maxy)
+      if (landscape[cellFromXY(landscape,c(x,y) )]==1)  draw=TRUE #check if in the habitat
+    }
+    
+    coords[cc,] <- c(x,y)
+    
+    if (nrow(coords)>1) d <- min(dist(coords)) else d <- mindist+1 
+    
+    if (d > mindist) cc <- cc+1  #take the location only if distance is larger than mindist
+  }
+  return( as.matrix( coords))
+}
+
+
+
+###################Computation intensive############
+## for-loop to calculate distance matrices
+
+  r <- raster(Maps[19])
+  
+  
+  
+  #Define Metapopulation.  Again this is from the Wk8 lab.
+  
+  para<- list()
+  #Define populations (dynamics)
+  para$n.pops=40 # set the number of unique locations for the populations
+  para$n.ind=25 # set the number of individuals per population
+  
+  
+  #Define cost distance method
+  para$method <- "commute" #commute is akin to Circuit-based analysis (Fouss et al. 2006)
+  para$NN <- 8  #number of neighbours for the cost distance method ### I think this is direction moveable through cells-I set it to 8
+  
+  
+  #Define x and y locations
+  para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r)
+  
+  
+  
+  bw=16*30 #16 cells, each of 30m; may want to only do 8?
+  
+  ##########################
+  
+  ##Read in map files##
+  
+  mraster <- r #read in R before converting to 1 and 10
+  
+  ##read in CDPOP input file,will subset into only coordinates##
+  
+  uxy<-data.frame(para$locs)
+  
+  
+  ##create a null data frame
+  
+  results <- as.data.frame(array(NA, dim=c( 40, 38 )))
+  
+  ##for loop to fill in data frame with FRAGSTAT output
+  ##since some pops have no non-habitat, need to omit NULL outputs
+  
+  for(j in 1:length(uxy[,1])) {
+    lsub <- uxy[j,]
+    f <- extract(mraster, lsub, buffer=bw, na.rm=FALSE, cellnumbers=TRUE)
+    x <- rasterFromCells(mraster, f[[1]][,1], values=TRUE)
+    cr <- crop(mraster, x)
+    LM <- ClassStat(cr,cellsize=30, bkgd=1) #background values are 1
+    
+    if (!is.null(LM)) { 
+      results[j,]<-LM
+      
+    }
+    
+  }
+  
+  ##Change the column names
+  colnames(results)<-colnames(LM)
+  
+  #Change NA values to 1 for prop.landscape
+  results$prop.landscape[is.na(results$prop.landscape)] <- 1
+  
+  #Sum the values in results$prop.landscape
+  total <- sum(results$prop.landscape)
+  
+  results$prop.prop <- results$prop.landscape/total
+  
+  results$prop.prop <- results$prop.prop*600
+  
+  results$prop.prop <- results$prop.prop+10
+  
+  results$prop.prop <- round(results$prop.prop)
+  
+  ###Convex hull used to limit the processing speed.  with less populations, may
+  ### want to change this.  Circuitscape analyses require all landscapes, and this may 
+  ### limit the total connectivity between points, and may limit costs for edge populations
+  ###disproportionately than central populations
+  
+  #Create convex hull
+  
+  
+  conhull <- SpatialPoints(para$locs)
+  hull <- gConvexHull(conhull)
+  
+  hullbuffer <- gBuffer(hull, width=10000)
+  landscape<-crop(r,hullbuffer)
+  
+  poptotal <- sum(results$prop.prop)
+  ##create a dataset that with "initial" with length of # of total individuals
+  
+  initial<-NA
+  for(j in 1:(poptotal)){
+    init<-paste(c("initial",j),sep="",collapse="")
+    initial<-na.omit(rbind(initial,init))
+  } 
+  
+ 
+
+  
+  
+  
+  
+  #Create all the crap you need to populate the Individuals data from with subpopulations with different numbers of individuals per subpop
+  ctr <- 1
+  pops <-c()
+  
+  
+  for(n in results$prop.prop){
+    idx <- rep(ctr,n)
+    pops <- c(pops, idx)
+    ctr <- ctr + 1
+  }
+  
+
+
+  #Create yet another dataframe
+  pops <-as.data.frame(pops)
+  location <-as.data.frame(para$locs)
+  location$pops <-c(1:40)
+  results$pops <- c(1:40)
+  total <-merge(pops, location, by=intersect(names(pops),names(pops)))
+
+  
+  ##crate a dataset with all the CDPOP inputs.  Assign individuals to subpopulations, xy coordinates, a unique ID, equal sex assignment prob,
+  ##and fitness of alleles.  AA is set to 50, Aa is set from 1-1000 (based on trial data, this may need to be set differently), and 100.
+  #create a list that assigns population identification to individuals
+  #assign XY coordinates to individuals
+  #assign uniqu IDs for individuals
+  #assign sex to F or M randomly
+  #assign allele fitness frequencies
+   Individuals<-data.frame(total$pops,total$lx,total$ly,initial[,1],sample(c(0,1),poptotal,replace=TRUE),0,0,0,0,0,0,0,0,0,0,0,0) 
+  
+  colnames(Individuals)<-c("Subpopulation","lx","ly","ID","sex","Fitness_AA","Fitness_Aa","Fitness_aa","Fitness_AABB",
+                           "Fitness_AaBB","Fitness_aaBB","Fitness_AABb","Fitness_AaBb","Fitness_aaBb","Fitness_AAbb","Fitness_Aabb","Fitness_aabb")
+  
+  
+  
+  #create a costdistance matrix for individuals from subpopulation distances
+  
+  ##set non-habitat to friction values of 10, and habitat to 1 for Circuit based-analyses
+  
+  values(r)[(values(r))==1]<-10
+  values(r)[(values(r))==0]<-1
+  # A)    init simulation populations from scratch
+  
+  landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
+  
+  cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
+  
+  model<-cost.mat
+  
+  Ind<-matrix(NA,ncol=length(Individuals$Subpopulation),nrow=length(Individuals$Subpopulation)) ##Create a null matrix of length of individuals
+  for(i in 1:length(Individuals$Subpopulation)){
+    
+    for(j in 1:length(Individuals$Subpopulation)){
+      
+      Ind[i,j]<-model[Individuals[i,1],Individuals[j,1]]
+    }
+  }
+  #####################
+  ###IBD CALCULATION###
+  #####################
+  
+  IBD<-landscape
+  values(IBD)<-1
+  
+  IBD.mat <- costdistances(IBD, para$locs, para$method, para$NN) #needed for the simulation
+  
+  #Define x and y locations
+  model<-IBD.mat
+  
+  IBD.ind<-matrix(NA,ncol=length(Individuals$Subpopulation),nrow=length(Individuals$Subpopulation)) ##Create a null matrix of length of individuals
+  for(i in 1:length(Individuals$Subpopulation)){
+    
+    for(j in 1:length(Individuals$Subpopulation)){
+      
+      IBD.ind[i,j]<-model[Individuals[i,1],Individuals[j,1]]
+    }
+  }
+  
+  
+  #Create a .table file that can be used by CDPOP  
+  #Write.table allows you to eliminate column names whereas write.csv does not
+  write.table(Ind, file =paste(c("costdistance",Maps[1],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBD.ind, file =paste(c("IBD",Maps[1],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.csv(Individuals, file =paste(c("XY",Maps[1],".csv"),sep="",collapse=""), row.names = FALSE)
+  write.csv(results, paste(c("AtSite",Maps[1],".csv"),collapse="",sep=""))
+  
+
