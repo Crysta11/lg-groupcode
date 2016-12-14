@@ -36,7 +36,7 @@ createpops <- function(n, mindist, landscape)
     {
       x <- runif(1,minx,maxx)
       y <- runif(1,miny,maxy)
-      if (landscape[cellFromXY(landscape,c(x,y) )]==1)  draw=TRUE #check if in the habitat
+      if (landscape[cellFromXY(landscape,c(x,y) )]==0)  draw=TRUE #check if in the habitat
     }
     
     coords[cc,] <- c(x,y)
