@@ -233,13 +233,13 @@ results$prop.prop
  ###GRAV IBD CALCULATION###
  ##########################
   
-  Grav.IBD<-landscape
-  values(Grav.IBD)<-1
+  IBD<-landscape
+  values(IBD)<-1
   
-  GravIBD.mat <- costdistances(Grav.IBD, para$locs, para$method, para$NN) #needed for the simulation
+  IBD.mat <- costdistances(Grav.IBD, para$locs, para$method, para$NN) #needed for the simulation
   
   #Define x and y locations
-  model<-GravIBD.mat
+  model<-IBD.mat
   
   GravIBD.ind<-matrix(NA,ncol=length(GravIndividuals$Subpopulation),nrow=length(GravIndividuals$Subpopulation)) ##Create a null matrix of length of individuals
   for(i in 1:length(GravIndividuals$Subpopulation)){
@@ -284,12 +284,7 @@ results$prop.prop
   #####################
   ###IBD CALCULATION###
   #####################
-  
-  IBD<-landscape
-  values(IBD)<-1
-  
-  IBD.mat <- costdistances(IBD, para$locs, para$method, para$NN) #needed for the simulation
-  
+    
   #Define x and y locations
   model<-IBD.mat
   
