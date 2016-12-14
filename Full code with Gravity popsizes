@@ -117,14 +117,12 @@ createpops <- function(n, mindist, landscape)
   
   #Sum the values in results$prop.landscape
   total <- sum(results$prop.landscape)
-  
-  results$prop.prop <- results$prop.landscape/total
-  
-  results$prop.prop <- results$prop.prop*600
-  
-  results$prop.prop <- results$prop.prop+10
-  
-  results$prop.prop <- round(results$prop.prop)
+   
+
+
+#create a number of individuals/pop based on habitat quality
+#with at least 10/population             
+results$prop.prop <- round((results$prop.landscape/total)*600+10)
   
   ###Convex hull used to limit the processing speed.  with less populations, may
   ### want to change this.  Circuitscape analyses require all landscapes, and this may 
