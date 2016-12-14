@@ -11,7 +11,9 @@ library(SDMTools)
 
 setwd(choose.dir())
 
-Maps<-list.files(pattern=".img")	##list all files in the raster directory
+#Maps<-list.files(pattern=".img")##list all files in the raster directory
+
+Maps<-list.files()
 length(Maps)
 
 
@@ -177,9 +179,6 @@ results$prop.prop
   location$pops <-c(1:40)
   results$pops <- c(1:40)
   GravModel <-merge(pops, location, by=intersect(names(pops),names(pops)))
-
-  poptotal
-
 
 
 #######################
