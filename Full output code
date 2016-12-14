@@ -310,6 +310,6 @@ results$prop.prop
   write.csv(Individuals, file =paste(c("XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE)
   write.table(GravInd, file =paste(c("Gravcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
   write.table(GravIBD.ind, file =paste(c("GravIBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.csv(GravIndividuals, file =paste(c("GravXY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE)
+  write.table(GravIndividuals, file =paste(c("GravXY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE)
   
 }
