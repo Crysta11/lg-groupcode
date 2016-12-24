@@ -234,8 +234,8 @@ for(z in 1:length(MapOnly)){
  ###GRAV IBD CALCULATION###
  ##########################
   
-  IBD<-landscape
-  values(IBD)<-1
+  Grav.IBD<-landscape
+  values(Grav.IBD)<-1
   
   IBD.mat <- costdistances(Grav.IBD, para$locs, para$method, para$NN) #needed for the simulation
   
