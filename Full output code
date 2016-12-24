@@ -54,7 +54,7 @@ createpops <- function(n, mindist, landscape)
   return( as.matrix( coords))
 }
 
-length(MapOnly)
+
 
 ###################Computation intensive############
 ## for-loop to calculate distance matrices
@@ -62,6 +62,8 @@ length(MapOnly)
 for(z in 1:length(MapOnly)){
   r <- raster(MapOnly[z])
 
+#Trial run before for-loop
+#r<-raster(MapOnly[1])
 
   #Define Metapopulation.  Again this is from the Wk8 lab.
   
@@ -131,7 +133,7 @@ for(z in 1:length(MapOnly)){
   
   results$prop.prop <- round((results$prop.landscape/total)*600+10)
   
-results$prop.prop
+
   ###Convex hull used to limit the processing speed.  with less populations, may
   ### want to change this.  Circuitscape analyses require all landscapes, and this may 
   ### limit the total connectivity between points, and may limit costs for edge populations
@@ -296,14 +298,45 @@ results$prop.prop
     }
   }
 
-  
+
+#########################
+#####IBE CALCULATIONS####
+#########################
+
+IBE.site<-matrix(NA, ncol=para$n.pops,nrow=para$n.pops)
+for(x in 1:para$n.pops){
+	for(w in 1:para$n.pops){
+
+	IBE.site[x,w]<-abs(results$prop.landscape[x]-results$prop.landscape[w])
+
+	}
+  }
+
+IBE.ind<-matrix(NA,ncol=length(Individuals$Subpopulation),nrow=length(Individuals$Subpopulation)) ##Create a null matrix of length of individuals
+ 
+model<-IBE.site
+ for(i in 1:length(Individuals$Subpopulation)){
+    
+    for(j in 1:length(Individuals$Subpopulation)){
+      
+      IBE.ind[i,j]<-model[Individuals[i,1],Individuals[j,1]]
+    }
+  }
+
+
+IBE.null<-matrix(.5,ncol=1000,nrow=1000)
+diag(IBE.null)<-0
+
+ 
   #Create a .table file that can be used by CDPOP  
   #Write.table allows you to eliminate column names whereas write.csv does not
-  write.table(Ind, file =paste(c("costdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(IBD.ind, file =paste(c("IBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.csv(Individuals, file =paste(c("XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE)
-  write.table(GravInd, file =paste(c("Gravcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(GravIBD.ind, file =paste(c("GravIBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(GravIndividuals, file =paste(c("GravXY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE)
-  
+  write.table(Ind, file =paste(c("IBR_costdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBD.ind, file =paste(c("IBR_IBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(Individuals, file =paste(c("XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE)
+  write.table(GravInd, file =paste(c("Grav_costdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIBD.ind, file =paste(c("Grav_IBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIndividuals, file =paste(c("Grav_XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE)
+  write.table(IBE.ind, file =paste(c("IBE_costdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBE.null, file =paste(c("IBE_null",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+
 }
