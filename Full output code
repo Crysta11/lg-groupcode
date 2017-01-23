@@ -327,9 +327,10 @@ model<-IBE.site
 IBE.null<-matrix(.5,ncol=1000,nrow=1000)
 diag(IBE.null)<-0
 
-##Write CDPOP inputvars table
-MapOnly<-data.frame(1,2,3)
-z<-1
+################################
+#######CDPOP INPUT FILES########
+################################
+
 
 GravIn<-data.frame(paste(c("GravXY",MapOnly[z]),sep="",collapse=""),
 	"AgevarsNEW.csv","10","500","499","genepop","N","0|25",
