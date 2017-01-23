@@ -40,7 +40,7 @@ for(k in 1:length(Perms)){
         p2<-1-p1values[j]
         reps<-1
         MapOut<-"G"
-        Name<-paste(c(Perms[k],"MapGen",Hvalues[i],"_",p1values[j]),sep="",collapse="")
+        Name<-paste(c("Trial",Perms[k],"Cont",Hvalues[i],"Hab",p1values[j]),sep="",collapse="")
         Analysis<-"N"
         Res<-30
     
@@ -51,7 +51,7 @@ for(k in 1:length(Perms)){
     
     ## rename the arcgrid.map file so that it won't be overwritten
     
-    file.rename("arcgrid.map", paste("Maps\\",Name,"MAP.txt",sep="",collapse=" "))
+    file.rename("arcgrid.map", paste("Maps\\",Name,sep="",collapse=" "))
     
      }
   
