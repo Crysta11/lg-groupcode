@@ -327,16 +327,71 @@ model<-IBE.site
 IBE.null<-matrix(.5,ncol=1000,nrow=1000)
 diag(IBE.null)<-0
 
- 
+##Write CDPOP inputvars table
+MapOnly<-data.frame(1,2,3)
+z<-1
+
+GravIn<-data.frame(paste(c("GravXY",MapOnly[z]),sep="",collapse=""),
+	"AgevarsNEW.csv","10","500","499","genepop","N","0|25",
+	paste(c("GravIBD",MapOnly[z],"|","Gravcostdistance",MapOnly[z]),sep="",collapse=""),
+	paste(c("GravIBD",MapOnly[z],"|","Gravcostdistance",MapOnly[z]),sep="",collapse=""),
+	"6","1","1","1","max","N","Y","Y","Y","N","N","N","2","1","1","1","0.25","2","1","1","1","22max",  ##MAY WANT TO CHANGE 22MAX
+	"2","50","N","0","exp","1","1000","0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0",
+	"0.005","random","50","random","N","30","N","0","N","0","N","0","0")
+
+colnames(GravIn)<-c("xyfilename","agefilename","mcruns","looptime","output_years","gridformat","gendmatans","cdclimgentime",
+	"matecdmat","dispcdmat","matemoveno","matemoveparA","matemoveparB","matemoveparC","matemovethresh","output_matedistance",
+	"sexans","Freplace","Mreplace","philopatry","multiple_paternity","selfans","Fdispmoveno","FdispmoveparA",
+	"FdispmoveparB","FdispmoveparC","Fdispmovethresh","Mdispmoveno","MdispmoveparA","MdispmoveparB","MdispmoveparC",
+	"Mdispmovethresh","offno","Femalepercent","EqualsexratioBirth","TwinningPercent","popModel",
+	"r","K_env","subpopmortperc","muterate","mutationtype","loci","intgenesans","allefreqfilename","alleles","mtdna",
+	"startGenes","cdevolveans","startSelection","betaFile","cdinfect","transmissionprob")
+
+IBRIn<-data.frame(paste(c("IBRXY",MapOnly[z]),sep="",collapse=""),
+	"AgevarsNEW.csv","10","500","499","genepop","N","0|25",
+	paste(c("IBRIBD",MapOnly[z],"|","IBRcostdistance",MapOnly[z]),sep="",collapse=""),
+	paste(c("IBRIBD",MapOnly[z],"|","IBRcostdistance",MapOnly[z]),sep="",collapse=""),
+	"6","1","1","1","max","N","Y","Y","Y","N","N","N","2","1","1","1","0.25","2","1","1","1","22max",  ##MAY WANT TO CHANGE 22MAX
+	"2","50","N","0","exp","1","1000","0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0",
+	"0.005","random","50","random","N","30","N","0","N","0","N","0","0")
+
+colnames(IBRIn)<-c("xyfilename","agefilename","mcruns","looptime","output_years","gridformat","gendmatans","cdclimgentime",
+	"matecdmat","dispcdmat","matemoveno","matemoveparA","matemoveparB","matemoveparC","matemovethresh","output_matedistance",
+	"sexans","Freplace","Mreplace","philopatry","multiple_paternity","selfans","Fdispmoveno","FdispmoveparA",
+	"FdispmoveparB","FdispmoveparC","Fdispmovethresh","Mdispmoveno","MdispmoveparA","MdispmoveparB","MdispmoveparC",
+	"Mdispmovethresh","offno","Femalepercent","EqualsexratioBirth","TwinningPercent","popModel",
+	"r","K_env","subpopmortperc","muterate","mutationtype","loci","intgenesans","allefreqfilename","alleles","mtdna",
+	"startGenes","cdevolveans","startSelection","betaFile","cdinfect","transmissionprob")
+
+IBEIn<-data.frame(paste(c("IBEXY",MapOnly[z]),sep="",collapse=""),
+	"AgevarsNEW.csv","10","500","499","genepop","N","0|25",
+	paste(c("IBEIBD",MapOnly[z],"|","IBEcostdistance",MapOnly[z]),sep="",collapse=""),
+	paste(c("IBEIBD",MapOnly[z],"|","IBEcostdistance",MapOnly[z]),sep="",collapse=""),
+	"6","1","1","1","max","N","Y","Y","Y","N","N","N","2","1","1","1","0.25","2","1","1","1","22max",  ##MAY WANT TO CHANGE 22MAX
+	"2","50","N","0","exp","1","1000","0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0",
+	"0.005","random","50","random","N","30","N","0","N","0","N","0","0")
+
+colnames(IBEIn)<-c("xyfilename","agefilename","mcruns","looptime","output_years","gridformat","gendmatans","cdclimgentime",
+	"matecdmat","dispcdmat","matemoveno","matemoveparA","matemoveparB","matemoveparC","matemovethresh","output_matedistance",
+	"sexans","Freplace","Mreplace","philopatry","multiple_paternity","selfans","Fdispmoveno","FdispmoveparA",
+	"FdispmoveparB","FdispmoveparC","Fdispmovethresh","Mdispmoveno","MdispmoveparA","MdispmoveparB","MdispmoveparC",
+	"Mdispmovethresh","offno","Femalepercent","EqualsexratioBirth","TwinningPercent","popModel",
+	"r","K_env","subpopmortperc","muterate","mutationtype","loci","intgenesans","allefreqfilename","alleles","mtdna",
+	"startGenes","cdevolveans","startSelection","betaFile","cdinfect","transmissionprob")
+
+
   #Create a .table file that can be used by CDPOP  
   #Write.table allows you to eliminate column names whereas write.csv does not
-  write.table(Ind, file =paste(c("IBR_costdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(IBD.ind, file =paste(c("IBR_IBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(Ind, file =paste(c("IBRcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBD.ind, file =paste(c("IBRIBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
   write.table(Individuals, file =paste(c("XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
-  write.table(GravInd, file =paste(c("Grav_costdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(GravIBD.ind, file =paste(c("Grav_IBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(GravIndividuals, file =paste(c("Grav_XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
-  write.table(IBE.ind, file =paste(c("IBE_costdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(IBE.null, file =paste(c("IBE_null",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBRIn, file =paste(c("GIBRIn",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravInd, file =paste(c("Gravcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIBD.ind, file =paste(c("GravIBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIndividuals, file =paste(c("GravXY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIn, file =paste(c("GravIn",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBE.ind, file =paste(c("IBEcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBE.null, file =paste(c("IBEnull",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBEIn, file =paste(c("IBE",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
 
 }
