@@ -1,0 +1,56 @@
+################################
+#######CDPOP INPUT FILES########
+################################
+
+
+GravIn<-data.frame(paste(c("GravXY",MapOnly[z]),sep="",collapse=""),
+	"AgevarsNEW.csv","10","500","499","genepop","N","0|25",
+	paste(c("GravIBD",MapOnly[z],"|","Gravcostdistance",MapOnly[z]),sep="",collapse=""),
+	paste(c("GravIBD",MapOnly[z],"|","Gravcostdistance",MapOnly[z]),sep="",collapse=""),
+	"6","1","1","1","max","N","Y","Y","Y","N","N","N","2","1","1","1","0.25","2","1","1","1","22max",  ##MAY WANT TO CHANGE 22MAX
+	"2","50","N","0","exp","1","1000","0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0",
+	"0.005","random","50","random","N","30","N","0","N","0","N","0","0")
+
+colnames(GravIn)<-c("xyfilename","agefilename","mcruns","looptime","output_years","gridformat","gendmatans","cdclimgentime",
+	"matecdmat","dispcdmat","matemoveno","matemoveparA","matemoveparB","matemoveparC","matemovethresh","output_matedistance",
+	"sexans","Freplace","Mreplace","philopatry","multiple_paternity","selfans","Fdispmoveno","FdispmoveparA",
+	"FdispmoveparB","FdispmoveparC","Fdispmovethresh","Mdispmoveno","MdispmoveparA","MdispmoveparB","MdispmoveparC",
+	"Mdispmovethresh","offno","Femalepercent","EqualsexratioBirth","TwinningPercent","popModel",
+	"r","K_env","subpopmortperc","muterate","mutationtype","loci","intgenesans","allefreqfilename","alleles","mtdna",
+	"startGenes","cdevolveans","startSelection","betaFile","cdinfect","transmissionprob")
+
+IBRIn<-data.frame(paste(c("IBRXY",MapOnly[z]),sep="",collapse=""),
+	"AgevarsNEW.csv","10","500","499","genepop","N","0|25",
+	paste(c("IBRIBD",MapOnly[z],"|","IBRcostdistance",MapOnly[z]),sep="",collapse=""),
+	paste(c("IBRIBD",MapOnly[z],"|","IBRcostdistance",MapOnly[z]),sep="",collapse=""),
+	"6","1","1","1","max","N","Y","Y","Y","N","N","N","2","1","1","1","0.25","2","1","1","1","22max",  ##MAY WANT TO CHANGE 22MAX
+	"2","50","N","0","exp","1","1000","0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0",
+	"0.005","random","50","random","N","30","N","0","N","0","N","0","0")
+
+colnames(IBRIn)<-c("xyfilename","agefilename","mcruns","looptime","output_years","gridformat","gendmatans","cdclimgentime",
+	"matecdmat","dispcdmat","matemoveno","matemoveparA","matemoveparB","matemoveparC","matemovethresh","output_matedistance",
+	"sexans","Freplace","Mreplace","philopatry","multiple_paternity","selfans","Fdispmoveno","FdispmoveparA",
+	"FdispmoveparB","FdispmoveparC","Fdispmovethresh","Mdispmoveno","MdispmoveparA","MdispmoveparB","MdispmoveparC",
+	"Mdispmovethresh","offno","Femalepercent","EqualsexratioBirth","TwinningPercent","popModel",
+	"r","K_env","subpopmortperc","muterate","mutationtype","loci","intgenesans","allefreqfilename","alleles","mtdna",
+	"startGenes","cdevolveans","startSelection","betaFile","cdinfect","transmissionprob")
+
+IBEIn<-data.frame(paste(c("IBEXY",MapOnly[z]),sep="",collapse=""),
+	"AgevarsNEW.csv","10","500","499","genepop","N","0|25",
+	paste(c("IBEIBD",MapOnly[z],"|","IBEcostdistance",MapOnly[z]),sep="",collapse=""),
+	paste(c("IBEIBD",MapOnly[z],"|","IBEcostdistance",MapOnly[z]),sep="",collapse=""),
+	"6","1","1","1","max","N","Y","Y","Y","N","N","N","2","1","1","1","0.25","2","1","1","1","22max",  ##MAY WANT TO CHANGE 22MAX
+	"2","50","N","0","exp","1","1000","0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0",
+	"0.005","random","50","random","N","30","N","0","N","0","N","0","0")
+
+colnames(IBEIn)<-c("xyfilename","agefilename","mcruns","looptime","output_years","gridformat","gendmatans","cdclimgentime",
+	"matecdmat","dispcdmat","matemoveno","matemoveparA","matemoveparB","matemoveparC","matemovethresh","output_matedistance",
+	"sexans","Freplace","Mreplace","philopatry","multiple_paternity","selfans","Fdispmoveno","FdispmoveparA",
+	"FdispmoveparB","FdispmoveparC","Fdispmovethresh","Mdispmoveno","MdispmoveparA","MdispmoveparB","MdispmoveparC",
+	"Mdispmovethresh","offno","Femalepercent","EqualsexratioBirth","TwinningPercent","popModel",
+	"r","K_env","subpopmortperc","muterate","mutationtype","loci","intgenesans","allefreqfilename","alleles","mtdna",
+	"startGenes","cdevolveans","startSelection","betaFile","cdinfect","transmissionprob")
+
+  write.table(IBRIn, file =paste(c("GIBRIn",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIn, file =paste(c("GravIn",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBEIn, file =paste(c("IBE",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
