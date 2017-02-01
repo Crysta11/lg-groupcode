@@ -1,0 +1,119 @@
+require(PopGenReport)
+require(strataG)
+require(adegenet)
+
+
+ADat<-read.csv(choose.files())
+head(ADat)
+
+##strataG can calculate Nei's DA
+
+#####################NEIS DA######################
+
+##Individuals have duplicate IDs, so create a column of unique IDs
+##FOLLOW UP ON WHY THIS HAPPENED?
+head(ADat)
+Ind<-1:1000
+Adat<-cbind(Ind,ADat)
+##Check the new file
+summary(Adat)
+head(Adat[,1:9])
+head(ADat[,1:8],30)
+dim(Adat)
+##Convert dataframe to a gtype class
+	##IDs are in the first column
+	##there are 30 alleles/loci
+	##the loci data starts on colmn 10 now
+
+GenG<-df2gtypes(Adat,ploidy=30,loc.col=10)
+
+##Calculate Nei's DA from the gtype object
+
+NDAGenG<-neiDa(GenG)
+
+##create a dist matrix from the Nei's DA output
+
+## for40 populations, so M matrix is 40x40
+
+head(NDAGenG)
+
+	M<-matrix(NA,ncol=40,nrow=40)
+	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
+	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
+	M[is.na(M)]<-0
+
+  row.names(M)<-1:40
+  colnames(M)<-1:40
+plot(M[lower.tri(M,diag=F)])
+
+write.csv(M,"C:\\Users\\Nathan\\Desktop\\NeisDA.csv")
+
+###############################
+
+##Pairwise Fst### From PopGenReport
+
+Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
+
+Fst<-pairwise.fstb(Prop)
+
+write.csv(Fst,"C:\\Users\\Nathan\\Desktop\\Fst.csv")
+###Pairwise Dps###
+
+####Wasn't calling function, so copied and pasted from github####
+
+pairwise.propShared <- function(gi)
+{
+  n.pops <- length(unique(pop(gi)))
+  allPairs <- combn(1:n.pops, 2)
+  gen.mat<- matrix(0, nrow=n.pops, ncol=n.pops)
+  pops <- seppop(gi)
+  pspop <- function(x) 
+  {
+    pp  <- seppop(x)
+    p1 <- pp[[1]]
+    p2 <- pp[[2]]
+    
+    na <- ncol(p1@tab)
+    maf <- NA
+    m1 <- colMeans(p1@tab[,], na.rm=T)/2
+    m2 <- colMeans(p2@tab[,], na.rm=T)/2
+    
+    m12 <- apply(rbind(m1,m2), 2, min, na.rm=T)
+    
+    lfl <- NA
+    facs <- levels(p1@loc.fac)
+    for (i in 1:length(locNames(p1))) 	lfl[i] <- sum(m12[p1@loc.fac==facs[i]])
+    mean(lfl, na.rm=T)	
+  }
+  
+  for (i in 1:ncol(allPairs))
+  {
+    np1 <- allPairs[1,i]
+    np2 <- allPairs[2,i]
+    
+    p12 <- repool(pops[[np1]], pops[[np2]])
+    ps <- pspop(p12)
+    gen.mat[np1,np2] <- ps
+    gen.mat[np2,np1] <- ps
+    
+  }
+  la <- levels(pop(gi))
+  colnames(gen.mat) <- rownames(gen.mat) <- la
+  return(as.dist(gen.mat))
+}
+
+####Actual Proportion of Shared Alleles command#####  from PopGenReport
+
+Dps<-as.matrix(pairwise.propShared(Prop))
+
+write.csv(Dps,"C:\\Users\\Nathan\\Desktop\\Dps.csv")
+
+
+#######PCA########## from adegenet
+population<-genind2genpop(Prop)
+population
+PCA <- scaleGen(Prop, scale=FALSE)
+pca<- dudi.pca(PCA, center=FALSE, scale=FALSE)
+2
+pca
+s.class(pca$li, fac=pop(Prop), col=funky(15))
