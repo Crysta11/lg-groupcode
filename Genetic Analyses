@@ -1,12 +1,25 @@
+install.packages("PopGenReport")
 require(PopGenReport)
+install.packages("strataG")
 require(strataG)
-require(adegenet)
-
+B<-read.csv(choose.files())
+colnames(B)
+A<-read_population("C:\\Users\\Nathan\\Desktop\\genepopgrid500.gen", type="genepop")
+A<-read.genetable("C:\\Users\\Nathan\\Desktop\\Trials\\grid1.csv", pop = 1, ind=NULL,
+long = NULL, lat = NULL , x = 2, y = 3, other.min = 4:8, other.max = NULL,
+oneColPerAll=TRUE, NA.char = NULL, sep = ",", ncode = NULL, ploidy = 30)
 
 ADat<-read.csv(choose.files())
 head(ADat)
 
 ##strataG can calculate Nei's DA
+
+install.packages("strataG")
+install.packages("gstudio")
+require(strataG)
+require(gstudio)
+require(ecodist)
+dim(ADat)
 
 #####################NEIS DA######################
 
@@ -50,8 +63,7 @@ write.csv(M,"C:\\Users\\Nathan\\Desktop\\NeisDA.csv")
 
 ###############################
 
-##Pairwise Fst### From PopGenReport
-
+##Pairwise Fst###
 Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
 
 Fst<-pairwise.fstb(Prop)
@@ -102,18 +114,21 @@ pairwise.propShared <- function(gi)
   return(as.dist(gen.mat))
 }
 
-####Actual Proportion of Shared Alleles command#####  from PopGenReport
+####Actual Proportion of Shared Alleles command#####
 
 Dps<-as.matrix(pairwise.propShared(Prop))
 
 write.csv(Dps,"C:\\Users\\Nathan\\Desktop\\Dps.csv")
-
-
-#######PCA########## from adegenet
+#######PCA
 population<-genind2genpop(Prop)
-population
-PCA <- scaleGen(Prop, scale=FALSE)
+PCA <- scaleGen(population, scale=FALSE)
 pca<- dudi.pca(PCA, center=FALSE, scale=FALSE)
 2
 pca
-s.class(pca$li, fac=pop(Prop), col=funky(15))
+dim(pca$li)
+pca.dist<-data.frame(pca$li)
+pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
+pca.mat<-as.matrix(pca.euc)
+
+write.csv(pca.mat,"C:\\Users\\Nathan\\Desktop\\pca.csv")
+
