@@ -1,76 +1,13 @@
 install.packages("PopGenReport")
+install.packages("strataG")
+install.packages("ecodist")
+install.packages("adegenet")
 require(PopGenReport)
-install.packages("strataG")
 require(strataG)
-B<-read.csv(choose.files())
-colnames(B)
-A<-read_population("C:\\Users\\Nathan\\Desktop\\genepopgrid500.gen", type="genepop")
-A<-read.genetable("C:\\Users\\Nathan\\Desktop\\Trials\\grid1.csv", pop = 1, ind=NULL,
-long = NULL, lat = NULL , x = 2, y = 3, other.min = 4:8, other.max = NULL,
-oneColPerAll=TRUE, NA.char = NULL, sep = ",", ncode = NULL, ploidy = 30)
-
-ADat<-read.csv(choose.files())
-head(ADat)
-
-##strataG can calculate Nei's DA
-
-install.packages("strataG")
-install.packages("gstudio")
-require(strataG)
-require(gstudio)
 require(ecodist)
-dim(ADat)
+require(adegenet)
 
-#####################NEIS DA######################
-
-##Individuals have duplicate IDs, so create a column of unique IDs
-##FOLLOW UP ON WHY THIS HAPPENED?
-head(ADat)
-Ind<-1:1000
-Adat<-cbind(Ind,ADat)
-##Check the new file
-summary(Adat)
-head(Adat[,1:9])
-head(ADat[,1:8],30)
-dim(Adat)
-##Convert dataframe to a gtype class
-	##IDs are in the first column
-	##there are 30 alleles/loci
-	##the loci data starts on colmn 10 now
-
-GenG<-df2gtypes(Adat,ploidy=30,loc.col=10)
-
-##Calculate Nei's DA from the gtype object
-
-NDAGenG<-neiDa(GenG)
-
-##create a dist matrix from the Nei's DA output
-
-## for40 populations, so M matrix is 40x40
-
-head(NDAGenG)
-
-	M<-matrix(NA,ncol=40,nrow=40)
-	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
-	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
-	M[is.na(M)]<-0
-
-  row.names(M)<-1:40
-  colnames(M)<-1:40
-plot(M[lower.tri(M,diag=F)])
-
-write.csv(M,"C:\\Users\\Nathan\\Desktop\\NeisDA.csv")
-
-###############################
-
-##Pairwise Fst###
-Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
-
-Fst<-pairwise.fstb(Prop)
-
-write.csv(Fst,"C:\\Users\\Nathan\\Desktop\\Fst.csv")
-###Pairwise Dps###
-
+#############Dps function script#####################
 ####Wasn't calling function, so copied and pasted from github####
 
 pairwise.propShared <- function(gi)
@@ -114,21 +51,76 @@ pairwise.propShared <- function(gi)
   return(as.dist(gen.mat))
 }
 
+##########################
+setwd(choose.dir()) #choose a directory with all the grid csvs
+grids<-list.files()
+grids
+for(i in 1:length(grids)){
+
+ADat<-read.csv(grids[i])
+
+##strataG can calculate Nei's DA
+
+
+#####################NEIS DA######################
+
+##Individuals have duplicate IDs, so create a column of unique IDs
+##FOLLOW UP ON WHY THIS HAPPENED?
+Ind<-1:1000
+Adat<-cbind(Ind,ADat)
+##Check the new file
+
+##Convert dataframe to a gtype class
+	##IDs are in the first column
+	##there are 30 alleles/loci
+	##the loci data starts on colmn 10 now
+
+GenG<-df2gtypes(Adat,ploidy=30,loc.col=10)
+
+##Calculate Nei's DA from the gtype object
+
+NDAGenG<-neiDa(GenG)
+
+##create a dist matrix from the Nei's DA output
+
+## for40 populations, so M matrix is 40x40
+
+	M<-matrix(NA,ncol=40,nrow=40)
+	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
+	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
+	M[is.na(M)]<-0
+
+  row.names(M)<-1:40
+  colnames(M)<-1:40
+
+
+write.csv(M,"C:\\Users\\Nathan\\Desktop\\NeisDA.csv")
+
+###############################
+
+##Pairwise Fst###
+Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
+
+Fst<-pairwise.fstb(Prop)
+
+write.csv(Fst,"C:\\Users\\Nathan\\Desktop\\Fst.csv")
+###Pairwise Dps###
+
 ####Actual Proportion of Shared Alleles command#####
 
 Dps<-as.matrix(pairwise.propShared(Prop))
 
 write.csv(Dps,"C:\\Users\\Nathan\\Desktop\\Dps.csv")
 #######PCA
+
 population<-genind2genpop(Prop)
 PCA <- scaleGen(population, scale=FALSE)
-pca<- dudi.pca(PCA, center=FALSE, scale=FALSE)
-2
-pca
-dim(pca$li)
+pca<-dudi.pca(PCA, center=FALSE, scale=FALSE,scannf=FALSE,nf=2)
 pca.dist<-data.frame(pca$li)
+
 pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
 pca.mat<-as.matrix(pca.euc)
 
 write.csv(pca.mat,"C:\\Users\\Nathan\\Desktop\\pca.csv")
 
+}
