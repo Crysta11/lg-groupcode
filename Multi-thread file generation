@@ -338,10 +338,10 @@ diag(IBE.null)<-0
   #Write.table allows you to eliminate column names whereas write.csv does not
   write.table(Ind, file =paste(c("IBRcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
   write.table(IBD.ind, file =paste(c("IBRIBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(Individuals, file =paste(c("XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
+  write.table(Individuals, file =paste(c("XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=TRUE, sep=",")
   write.table(GravInd, file =paste(c("Gravcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
   write.table(GravIBD.ind, file =paste(c("GravIBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
-  write.table(GravIndividuals, file =paste(c("GravXY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIndividuals, file =paste(c("GravXY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=TRUE, sep=",")
   write.table(IBE.ind, file =paste(c("IBEcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
   write.table(IBE.null, file =paste(c("IBEnull",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
 
