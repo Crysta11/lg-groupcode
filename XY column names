@@ -1,0 +1,13 @@
+setwd(choose.dir())
+f<-list.files()
+head(f)
+
+for(i in 1:length(f)){
+a<-read.csv(f[i],header=FALSE)
+head(a)
+colnames(a)<-c("Subpopulation","lx","ly","ID","sex","Fitness_AA","Fitness_Aa","Fitness_aa","Fitness_AABB",
+                           "Fitness_AaBB","Fitness_aaBB","Fitness_AABb","Fitness_AaBb","Fitness_aaBb","Fitness_AAbb","Fitness_Aabb","Fitness_aabb")
+head(a) 
+
+  write.table(a, file =paste(c("C:\\Users\\Nathan\\Desktop\\FixedFiles\\",f[i],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=TRUE, sep=",")
+ }
