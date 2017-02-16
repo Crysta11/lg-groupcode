@@ -94,7 +94,8 @@ NDAGenG<-neiDa(GenG)
   colnames(M)<-1:40
 
 
-write.csv(M,"C:\\Users\\Nathan\\Desktop\\NeisDA.csv")
+write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i].".csv"),row.names=FALSE, na="",col.names=FALSE, sep=",")
+
 
 ###############################
 
@@ -102,6 +103,7 @@ write.csv(M,"C:\\Users\\Nathan\\Desktop\\NeisDA.csv")
 Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
 
 Fst<-pairwise.fstb(Prop)
+write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i].".csv"),row.names=FALSE, na="",col.names=FALSE, sep=",")
 
 write.csv(Fst,"C:\\Users\\Nathan\\Desktop\\Fst.csv")
 ###Pairwise Dps###
@@ -110,7 +112,8 @@ write.csv(Fst,"C:\\Users\\Nathan\\Desktop\\Fst.csv")
 
 Dps<-as.matrix(pairwise.propShared(Prop))
 
-write.csv(Dps,"C:\\Users\\Nathan\\Desktop\\Dps.csv")
+write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i].".csv"),row.names=FALSE, na="",col.names=FALSE, sep=",")
+
 #######PCA
 
 population<-genind2genpop(Prop)
@@ -121,6 +124,6 @@ pca.dist<-data.frame(pca$li)
 pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
 pca.mat<-as.matrix(pca.euc)
 
-write.csv(pca.mat,"C:\\Users\\Nathan\\Desktop\\pca.csv")
+write.table(pca.mat,file = paste(c("C:\\Users\\Nathan\\Desktop\\PCA\\P",CDPOP[i].".csv"),row.names=FALSE, na="",col.names=FALSE, sep=",")
 
 }
