@@ -53,11 +53,11 @@ pairwise.propShared <- function(gi)
 
 ##########################
 setwd(choose.dir()) #choose a directory with all the grid csvs
-grids<-list.files()
-grids
-for(i in 1:length(grids)){
+CDPOP<-list.files()
+CDPOP
+for(i in 1:length(CDPOP)){
 
-ADat<-read.csv(grids[i])
+ADat<-read.csv(CDPOP[i])
 
 ##strataG can calculate Nei's DA
 
@@ -66,7 +66,7 @@ ADat<-read.csv(grids[i])
 
 ##Individuals have duplicate IDs, so create a column of unique IDs
 ##FOLLOW UP ON WHY THIS HAPPENED?
-Ind<-1:1000
+Ind<-1:length(ADat[,1])
 Adat<-cbind(Ind,ADat)
 ##Check the new file
 
@@ -94,25 +94,24 @@ NDAGenG<-neiDa(GenG)
   colnames(M)<-1:40
 
 
-write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i].".csv"),row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i],".csv"),row.names=FALSE, na="",col.names=FALSE, sep=","))
 
 
 ###############################
-
 ##Pairwise Fst###
 Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
 
 Fst<-pairwise.fstb(Prop)
-write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i].".csv"),row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i],".csv"),row.names=FALSE, na="",col.names=FALSE, sep=","))
 
-write.csv(Fst,"C:\\Users\\Nathan\\Desktop\\Fst.csv")
+
 ###Pairwise Dps###
 
 ####Actual Proportion of Shared Alleles command#####
 
 Dps<-as.matrix(pairwise.propShared(Prop))
 
-write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i].".csv"),row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i],".csv"),row.names=FALSE, na="",col.names=FALSE, sep=","))
 
 #######PCA
 
@@ -124,6 +123,6 @@ pca.dist<-data.frame(pca$li)
 pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
 pca.mat<-as.matrix(pca.euc)
 
-write.table(pca.mat,file = paste(c("C:\\Users\\Nathan\\Desktop\\PCA\\P",CDPOP[i].".csv"),row.names=FALSE, na="",col.names=FALSE, sep=",")
+write.table(pca.mat,file = paste(c("C:\\Users\\Nathan\\Desktop\\PCA\\P",CDPOP[i],".csv"),row.names=FALSE, na="",col.names=FALSE, sep=","))
 
 }
