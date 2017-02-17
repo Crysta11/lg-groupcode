@@ -90,11 +90,7 @@ NDAGenG<-neiDa(GenG)
 	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
 	M[is.na(M)]<-0
 
-  row.names(M)<-1:40
-  colnames(M)<-1:40
-
-
-write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i],".csv"),row.names=FALSE, na="",col.names=FALSE, sep=","))
+write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 
 ###############################
@@ -102,7 +98,7 @@ write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i],".
 Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
 
 Fst<-pairwise.fstb(Prop)
-write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i],".csv"),row.names=FALSE, na="",col.names=FALSE, sep=","))
+write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 
 ###Pairwise Dps###
@@ -111,7 +107,7 @@ write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i],".c
 
 Dps<-as.matrix(pairwise.propShared(Prop))
 
-write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i],".csv"),row.names=FALSE, na="",col.names=FALSE, sep=","))
+write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 #######PCA
 
@@ -123,6 +119,6 @@ pca.dist<-data.frame(pca$li)
 pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
 pca.mat<-as.matrix(pca.euc)
 
-write.table(pca.mat,file = paste(c("C:\\Users\\Nathan\\Desktop\\PCA\\P",CDPOP[i],".csv"),row.names=FALSE, na="",col.names=FALSE, sep=","))
+write.table(pca.mat,file = paste(c("C:\\Users\\Nathan\\Desktop\\PCA\\P",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 }
