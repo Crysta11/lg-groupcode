@@ -2,11 +2,12 @@ install.packages("PopGenReport")
 install.packages("strataG")
 install.packages("ecodist")
 install.packages("adegenet")
+install.packages("imputeTS")
 require(PopGenReport)
 require(strataG)
 require(ecodist)
 require(adegenet)
-
+require(imputeTS)
 #############Dps function script#####################
 ####Wasn't calling function, so copied and pasted from github####
 
@@ -54,8 +55,9 @@ pairwise.propShared <- function(gi)
 ##########################
 setwd(choose.dir()) #choose a directory with all the grid csvs
 CDPOP<-list.files()
-CDPOP
-for(i in 22:length(CDPOP)){
+
+
+for(i in 1:length(CDPOP)){
 
 ADat<-read.csv(CDPOP[i])
 
@@ -66,6 +68,7 @@ ADat<-read.csv(CDPOP[i])
 
 ##Individuals have duplicate IDs, so create a column of unique IDs
 ##FOLLOW UP ON WHY THIS HAPPENED?
+ADat<-na.omit(ADat)
 Ind<-1:length(ADat[,1])
 Adat<-cbind(Ind,ADat)
 ##Check the new file
@@ -85,12 +88,14 @@ NDAGenG<-neiDa(GenG)
 
 ## for40 populations, so M matrix is 40x40
 
-	M<-matrix(NA,ncol=40,nrow=40)
+	M<-matrix(NA,ncol=length(unique(GenG@strata)),nrow=length(unique(GenG@strata)))
 	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
 	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
 	M[is.na(M)]<-0
 
+SurvivingPops<-unique(GenG@strata)
 write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(SurvivingPops,file = paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 
 ###############################
@@ -105,21 +110,18 @@ write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i],".c
 
 ####Actual Proportion of Shared Alleles command#####
 
-###PCA and Dps cannot do NA values, so set allele freq. to zero for those###
+###PCA and Dps cannot do NA values, so set allele freq. to zero for those##
 
-Adat1<-Adat
-Adat1[is.na(Adat1)]<-0
-head(Adat1)
-GenG1<-df2gtypes(Adat1,ploidy=30,loc.col=10)
-Prop1<-gtypes2genind(GenG1, type = c("codom", "PA"))
+Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
 Dps<-as.matrix(pairwise.propShared(Prop1))
 
 write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 #######PCA
 
-population<-genind2genpop(Prop1)
+population<-genind2genpop(Prop)
 PCA <- scaleGen(population, scale=FALSE)
+
 pca<-dudi.pca(PCA, center=FALSE, scale=FALSE,scannf=FALSE,nf=2)
 pca.dist<-data.frame(pca$li)
 
