@@ -1,0 +1,29 @@
+install.packages("GeNetIt")
+require(GeNetIt)
+require(PopGenReport)
+
+
+######################################
+#####IBE MODELING from PopGenReport###
+######################################
+
+
+##Requires Genetic distance matrices 
+###and a list of Environmental cost matrices
+
+###Can add IBD map into the eucl.mat to account for distance
+
+
+GenDist<-as.matrix(read.csv(choose.files(), header=FALSE))
+DistMat<-read.csv(choose.files(),header=FALSE)
+PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
+
+EnvCost<-list(PopDist)
+
+
+plot(GenDist1~PopDist)
+
+lgrMMRR(GenDist, EnvCost,eucl.mat= NULL, nperm = 999)
+
+
+
