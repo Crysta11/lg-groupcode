@@ -13,17 +13,29 @@ require(PopGenReport)
 
 ###Can add IBD map into the eucl.mat to account for distance
 
-
-GenDist<-as.matrix(read.csv(choose.files(), header=FALSE))
 DistMat<-read.csv(choose.files(),header=FALSE)
 PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
 
 EnvCost<-list(PopDist)
 
+setwd(choose.dir()) #choose where the genetic distances are located
+F<-list.files()
 
-plot(GenDist1~PopDist)
+##create a null data frame to store output
+IBE.Out<-matrix(NA, ncol=8)
+colnames(IBE.Out)<-c("Grid","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2")
+length(F)
+for(i in 1:length(F)){
+GenDist<-as.matrix(read.csv(F[i], header=FALSE))
 
-lgrMMRR(GenDist, EnvCost,eucl.mat= NULL, nperm = 999)
 
+a<-lgrMMRR(GenDist, EnvCost,eucl.mat= NULL, nperm = 999)
 
+#####Just want the correlation coefficient,
+#####So only take the first line from the output
+b<-cbind(F[i],a$mmrr.tab[1,])
+colnames(b)<-c("Grid","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2")
 
+IBE.Out<-rbind(IBE.Out,b)
+
+}
