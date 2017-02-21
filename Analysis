@@ -16,7 +16,7 @@ require(PopGenReport)
 DistMat<-read.csv(choose.files(),header=FALSE)
 PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
 
-EnvCost<-list(PopDist)
+CDPOP
 
 setwd(choose.dir()) #choose where the genetic distances are located
 F<-list.files()
@@ -28,7 +28,12 @@ length(F)
 for(i in 1:length(F)){
 GenDist<-as.matrix(read.csv(F[i], header=FALSE))
 
+extant<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",CDPOP[i],".csv"),sep="",collapse=""), header=FALSE)
 
+PopDist1<-PopDist[extant[,1],extant[,1]]
+PopDist1
+
+EnvCost<-list(PopDist1)
 a<-lgrMMRR(GenDist, EnvCost,eucl.mat= NULL, nperm = 999)
 
 #####Just want the correlation coefficient,
@@ -39,3 +44,5 @@ colnames(b)<-c("Grid","layer","coefficient","tstatistic","tpvalue","Fstat","Fpva
 IBE.Out<-rbind(IBE.Out,b)
 
 }
+IBE.Out1<-na.omit(IBE.Out)
+plot(IBE.Out1$r2)
