@@ -15,6 +15,8 @@ require(PopGenReport)
 
 DistMat<-read.csv(choose.files(),header=FALSE)
 PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
+IBD<-read.csv(choose.files(),header=FALSE)
+PopIBD<-as.matrix(IBD[!duplicated(IBD),!duplicated(IBD)])
 
 CDPOP
 
@@ -31,10 +33,9 @@ GenDist<-as.matrix(read.csv(F[i], header=FALSE))
 extant<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",CDPOP[i],".csv"),sep="",collapse=""), header=FALSE)
 
 PopDist1<-PopDist[extant[,1],extant[,1]]
-PopDist1
-
+PopIBD1<-PopIBD[extant[,1],extant[,1]]
 EnvCost<-list(PopDist1)
-a<-lgrMMRR(GenDist, EnvCost,eucl.mat= NULL, nperm = 999)
+a<-lgrMMRR(GenDist, EnvCost,eucl.mat= PopIBD1, nperm = 999)
 
 #####Just want the correlation coefficient,
 #####So only take the first line from the output
