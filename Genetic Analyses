@@ -94,8 +94,8 @@ NDAGenG<-neiDa(GenG)
 	M[is.na(M)]<-0
 
 SurvivingPops<-unique(GenG@strata)
-write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
-write.table(SurvivingPops,file = paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(M,file = paste(c("C:\\Users\\Nathan\\Desktop\\NeisDA\\N",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(SurvivingPops,file = paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 
 ###############################
@@ -103,7 +103,7 @@ write.table(SurvivingPops,file = paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",
 Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
 
 Fst<-pairwise.fstb(Prop)
-write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 
 ###Pairwise Dps###
@@ -115,7 +115,7 @@ write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i],".c
 Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
 Dps<-as.matrix(pairwise.propShared(Prop1))
 
-write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 #######PCA
 
@@ -128,6 +128,6 @@ pca.dist<-data.frame(pca$li)
 pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
 pca.mat<-as.matrix(pca.euc)
 
-write.table(pca.mat,file = paste(c("C:\\Users\\Nathan\\Desktop\\PCA\\P",CDPOP[i],".csv"),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(pca.mat,file = paste(c("C:\\Users\\Nathan\\Desktop\\PCA\\P",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 }
