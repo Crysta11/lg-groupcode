@@ -111,9 +111,7 @@ write.table(Fst,file = paste(c("C:\\Users\\Nathan\\Desktop\\Fst\\F",CDPOP[i]),co
 ####Actual Proportion of Shared Alleles command#####
 
 ###PCA and Dps cannot do NA values, so set allele freq. to zero for those##
-
-Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
-Dps<-as.matrix(pairwise.propShared(Prop1))
+Dps<-as.matrix(pairwise.propShared(Prop))
 
 write.table(Dps,file = paste(c("C:\\Users\\Nathan\\Desktop\\Dps\\D",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
