@@ -65,7 +65,7 @@ cl<-makeCluster(8) #select #of processors you have detectCluster() will provide 
 
 foreach(z=1:length(directories)) %dopar% {
 
-setwd(directories[z]) #choose a directory with all the grid csvs
+setwd(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\1Gravity0.2_0.2-.8\\1_first3\\",directories[2]),sep="",collapse="")) #choose a directory with all the grid csvs
 CDPOP<-list.files()
 
 
