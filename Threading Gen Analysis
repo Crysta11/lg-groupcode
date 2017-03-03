@@ -1,0 +1,148 @@
+install.packages("PopGenReport")
+install.packages("strataG")
+install.packages("ecodist")
+install.packages("adegenet")
+install.packages("imputeTS")
+require(PopGenReport)
+require(strataG)
+require(ecodist)
+require(adegenet)
+require(imputeTS)
+library(foreach)
+library(doParallel)
+#############Dps function script#####################
+####Wasn't calling function, so copied and pasted from github####
+
+pairwise.propShared <- function(gi)
+{
+  n.pops <- length(unique(pop(gi)))
+  allPairs <- combn(1:n.pops, 2)
+  gen.mat<- matrix(0, nrow=n.pops, ncol=n.pops)
+  pops <- seppop(gi)
+  pspop <- function(x) 
+  {
+    pp  <- seppop(x)
+    p1 <- pp[[1]]
+    p2 <- pp[[2]]
+    
+    na <- ncol(p1@tab)
+    maf <- NA
+    m1 <- colMeans(p1@tab[,], na.rm=T)/2
+    m2 <- colMeans(p2@tab[,], na.rm=T)/2
+    
+    m12 <- apply(rbind(m1,m2), 2, min, na.rm=T)
+    
+    lfl <- NA
+    facs <- levels(p1@loc.fac)
+    for (i in 1:length(locNames(p1))) 	lfl[i] <- sum(m12[p1@loc.fac==facs[i]])
+    mean(lfl, na.rm=T)	
+  }
+  
+  for (i in 1:ncol(allPairs))
+  {
+    np1 <- allPairs[1,i]
+    np2 <- allPairs[2,i]
+    
+    p12 <- repool(pops[[np1]], pops[[np2]])
+    ps <- pspop(p12)
+    gen.mat[np1,np2] <- ps
+    gen.mat[np2,np1] <- ps
+    
+  }
+  la <- levels(pop(gi))
+  colnames(gen.mat) <- rownames(gen.mat) <- la
+  return(as.dist(gen.mat))
+}
+
+##########################
+
+setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\1Gravity0.2_0.2-.8\\1_first3")
+directories<-list.files()
+
+
+directories
+cl<-makeCluster(8) #select #of processors you have detectCluster() will provide the number
+
+foreach(z=1:length(directories)) %dopar% {
+
+setwd(directories[z]) #choose a directory with all the grid csvs
+CDPOP<-list.files()
+
+
+for(i in 1:length(CDPOP)){
+
+ADat<-read.csv(CDPOP[i])
+
+##strataG can calculate Nei's DA
+
+
+#####################NEIS DA######################
+
+##Individuals have duplicate IDs, so create a column of unique IDs
+##FOLLOW UP ON WHY THIS HAPPENED?
+ADat<-na.omit(ADat)
+Ind<-1:length(ADat[,1])
+Adat<-cbind(Ind,ADat)
+##Check the new file
+
+##Convert dataframe to a gtype class
+	##IDs are in the first column
+	##there are 30 alleles/loci
+	##the loci data starts on colmn 10 now
+
+GenG<-df2gtypes(Adat,ploidy=30,loc.col=10)
+
+##Calculate Nei's DA from the gtype object
+
+NDAGenG<-neiDa(GenG)
+
+##create a dist matrix from the Nei's DA output
+
+## for40 populations, so M matrix is 40x40
+
+	M<-matrix(NA,ncol=length(unique(GenG@strata)),nrow=length(unique(GenG@strata)))
+	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
+	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
+	M[is.na(M)]<-0
+
+SurvivingPops<-unique(GenG@strata)
+write.table(M,file = paste(c(getwd(),"N",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(SurvivingPops,file = paste(c(getwd(),"Extant",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+
+
+###############################
+##Pairwise Fst###
+Prop<-gtypes2genind(GenG, type = c("codom", "PA"))
+
+Fst<-pairwise.fstb(Prop)
+write.table(Fst,file = paste(c(getwd(),"F",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+
+
+###Pairwise Dps###
+
+####Actual Proportion of Shared Alleles command#####
+
+###PCA and Dps cannot do NA values, so set allele freq. to zero for those##
+Dps<-as.matrix(pairwise.propShared(Prop))
+
+write.table(Dps,file = paste(c(getwd(),"D",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+
+#######PCA
+
+population<-genind2genpop(Prop)
+PCA <- scaleGen(population, scale=FALSE)
+
+pca<-dudi.pca(PCA, center=FALSE, scale=FALSE,scannf=FALSE,nf=2)
+pca.dist<-data.frame(pca$li)
+
+pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
+pca.mat<-as.matrix(pca.euc)
+
+write.table(pca.mat,file = paste(c(getwd(),"P",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+
+}
+
+}
+
+
+stopCluster(cl)
