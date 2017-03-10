@@ -55,19 +55,35 @@ pairwise.propShared <- function(gi)
 }
 
 ##########################
-
+#####File format set to have folders of all the CDPOP runs within the working directory
 setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\1Gravity0.2_0.2-.8\\1_first3")
+
+##### Directories should be a list of file folders, each containing a CDPOP MC run
+##### (e.g. con2hab2_2, which will be a file folder with all the necessary "grid.csv" files)
 directories<-list.files()
 
-
+##Check working directories
 directories
+
+###create clusters in order to run in parallel
+
 cl<-makeCluster(8) #select #of processors you have detectCluster() will provide the number
+
+
+##if no parallel back end registered for "foreach" loop, use:
+##registerDoParallel(cl)
 
 foreach(z=1:length(directories)) %dopar% {
 
+
+###set working directory to iteratively read each CDPOP MC folder
+
 setwd(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\1Gravity0.2_0.2-.8\\1_first3\\",directories[z]),sep="",collapse="")) #choose a directory with all the grid csvs
+
+###list all of the "grid.csv" files wanted for analysis
 CDPOP<-list.files()
 
+###For each "grid.csv" file, calculate desired genetic distnace matrix
 
 for(i in 1:length(CDPOP)){
 
@@ -104,6 +120,9 @@ NDAGenG<-neiDa(GenG)
 	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
 	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
 	M[is.na(M)]<-0
+
+###When resampling cost-distance matrices, will need to know which populations went extinct.
+###Write the surviving populations to be loaded in and used to resample during analyses.
 
 SurvivingPops<-unique(GenG@strata)
 write.table(M,file = paste(c(getwd(),"N",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
@@ -144,5 +163,5 @@ write.table(pca.mat,file = paste(c(getwd(),"P",CDPOP[i]),collapse="",sep=""),row
 
 }
 
-
+###Need to stop clusters from continuing on the computer after runing analyses
 stopCluster(cl)
