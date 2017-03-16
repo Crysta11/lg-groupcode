@@ -37,11 +37,12 @@ length(F)
 for(i in 1:length(F)){
 GenDist<-as.matrix(read.csv(F[i], header=FALSE))
 
-##because some simuulations go extinct, we need to know which populations persist for each time step
+##because some simulations go extinct, we need to know which populations persist for each time step
+##these files were generated during the genetic distance metric coding
 extant<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",CDPOP[i],".csv"),sep="",collapse=""), header=FALSE)
 
 
-##we subset the full cost-distance matrix to only the populations that are extant
+##we subset the full cost-distance matrix to only the populations that are extant so matrices will match
 PopDist1<-PopDist[extant[,1],extant[,1]]
 
 ##do this for IBD if wanted
@@ -50,7 +51,7 @@ PopDist1<-PopDist[extant[,1],extant[,1]]
 ##because we only have one parameter we've simulated impacting dispersal for IBE, we list it as the Environmental cost
 EnvCost<-list(PopDist1)
 
-##execute PopGenReport's analysis based on Wang et al. 2013
+##execute PopGenReport's analysis based on Wang et al. 2013 Evolution
 a<-lgrMMRR(GenDist, EnvCost,eucl.mat= NULL, nperm = 999)
 
 ##The r^2 value and p-value are stored in the first line of output
