@@ -26,6 +26,9 @@ PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
 #PopIBD<-as.matrix(IBD[!duplicated(IBD),!duplicated(IBD)])
 
 
+######Read in Extant files
+setwd(choose.dir()) #choose directory with extant files from gen analysis
+E<-list.files
 ######Read in Fst files
 setwd(choose.dir()) #choose where the genetic distances are located
 F<-list.files()
@@ -39,7 +42,7 @@ GenDist<-as.matrix(read.csv(F[i], header=FALSE))
 
 ##because some simulations go extinct, we need to know which populations persist for each time step
 ##these files were generated during the genetic distance metric coding
-extant<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",CDPOP[i],".csv"),sep="",collapse=""), header=FALSE)
+extant<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",E[i],".csv"),sep="",collapse=""), header=FALSE)
 
 
 ##we subset the full cost-distance matrix to only the populations that are extant so matrices will match
