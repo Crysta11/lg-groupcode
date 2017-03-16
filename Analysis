@@ -13,35 +13,58 @@ require(PopGenReport)
 
 ###Can add IBD map into the eucl.mat to account for distance
 
+
+###read in Cost-distance map used to simulate in CDPOP
 DistMat<-read.csv(choose.files(),header=FALSE)
+
+##because we have matrices of individuals, we want to reduce down to only the population distances
 PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
+
+##Can read in the IBD burn-in files if we want to, but given that it isn't simulated,
+##this would best be an "if a researcher tests for IBD within an IBE framework, too
 #IBD<-read.csv(choose.files(),header=FALSE)
 #PopIBD<-as.matrix(IBD[!duplicated(IBD),!duplicated(IBD)])
 
+
+######Read in Fst files
 setwd(choose.dir()) #choose where the genetic distances are located
 F<-list.files()
 
-##create a null data frame to store output
+##create an emtpy matrix to store output
 IBE.Out<-matrix(NA, ncol=8)
 colnames(IBE.Out)<-c("Grid","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2")
 length(F)
 for(i in 1:length(F)){
 GenDist<-as.matrix(read.csv(F[i], header=FALSE))
 
+##because some simuulations go extinct, we need to know which populations persist for each time step
 extant<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Extant\\",CDPOP[i],".csv"),sep="",collapse=""), header=FALSE)
 
+
+##we subset the full cost-distance matrix to only the populations that are extant
 PopDist1<-PopDist[extant[,1],extant[,1]]
+
+##do this for IBD if wanted
 #PopIBD1<-PopIBD[extant[,1],extant[,1]]
+
+##because we only have one parameter we've simulated impacting dispersal for IBE, we list it as the Environmental cost
 EnvCost<-list(PopDist1)
+
+##execute PopGenReport's analysis based on Wang et al. 2013
 a<-lgrMMRR(GenDist, EnvCost,eucl.mat= NULL, nperm = 999)
 
-#####Just want the correlation coefficient,
-#####So only take the first line from the output
+##The r^2 value and p-value are stored in the first line of output
+##becuase we don't need the equations for the output, just extract the first line of output for each lgrMMR run
+## and save that into the output matrix
 b<-cbind(F[i],a$mmrr.tab[1,])
 colnames(b)<-c("Grid","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2")
 
 IBE.Out<-rbind(IBE.Out,b)
 
 }
+
+##since we started with an NA line for the matrix, we get rid of that one line
 IBE.Out1<-na.omit(IBE.Out)
+
+##check out the r^2 values to look at correlation for each genetic timestep
 plot(IBE.Out1$r2)
