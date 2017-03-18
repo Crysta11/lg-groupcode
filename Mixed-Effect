@@ -11,6 +11,7 @@ setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBR\\Genetics")
 
 Dirs<-list.dirs(getwd(),recursive=FALSE)
 
+##first two directories are IBR and IBD
 
 for(j in 1:sum(length(Dirs)-2)){
 
@@ -31,7 +32,7 @@ for(j in 1:sum(length(Dirs)-2)){
 	##so we will take the lower.tri of the matrices within the Genetic for-loop section
 
 ####Genetic distances and extant populations may change dependent on the timestep
-
+##Pass over the IBR and IBD directories
 	setwd(Dirs[j+2])
 
 	directories<-list.dirs()
@@ -39,6 +40,7 @@ for(j in 1:sum(length(Dirs)-2)){
 #choose extant file directory
 Extant<-list.files(directories[2])
 
+##First directory is just ".", and second are Extant populations, so start at directory 3
 for(k in 3:length(directories)){
 
 ##create output data frame
