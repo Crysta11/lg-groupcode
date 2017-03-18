@@ -54,7 +54,7 @@ for(k in 3:length(directories)){
 		Gen<-as.matrix(read.csv(paste(c(directories[k],"/",genetics[i]),sep="",collapse=""),header=FALSE))
 		Gen<-Gen[lower.tri(Gen)]
 
-		extant.pop<-as.matrix(read.csv(paste(c(directories[2],"/",Extant[1]),sep="",collapse=""),header=FALSE)) 
+		extant.pop<-as.matrix(read.csv(paste(c(directories[2],"/",Extant[i]),sep="",collapse=""),header=FALSE)) 
 	
 	
 		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
