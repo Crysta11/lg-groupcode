@@ -1,0 +1,363 @@
+require(ggplot2)
+require(grid)
+require(gridExtra)
+
+
+###Multiplot function
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+########
+
+setwd(choose.dir())
+Dps.list<-list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps")
+Fst.list<-list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst")
+Nei.list<-list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei")
+PCA.list<-list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA")
+
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[1]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[1]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[1]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[1]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Con2Hab2<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.2 Habitat 0.2")
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[2]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[2]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[2]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[2]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Con2Hab5<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.2 Habitat 0.5")
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[3]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[3]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[3]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[3]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Con2Hab8<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.2 Habitat 0.8")
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[4]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[4]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[4]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[4]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Con5Hab2<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.5 Habitat 0.2")
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[5]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[5]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[5]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[5]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+
+Con5Hab5<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.5 Habitat 0.5")
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[6]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[6]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[6]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[6]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Con5Hab8<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.5 Habitat 0.8")
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[7]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[7]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[7]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[7]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Con8Hab2<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.8 Habitat 0.2")
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[8]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[8]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[8]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[8]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Con8Hab5<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.8 Habitat 0.5")
+
+Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[9]),sep="",collapse=""),header=TRUE)
+Dps<-cbind(1:nrow(Dps)*10-9,Dps)
+colnames(Dps)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[9]),sep="",collapse=""),header=TRUE)
+Fst<-cbind(1:nrow(Fst)*10-9,Fst)
+colnames(Fst)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[9]),sep="",collapse=""),header=TRUE)
+Nei<-cbind(1:nrow(Nei)*10-9,Nei)
+colnames(Nei)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[9]),sep="",collapse=""),header=TRUE)
+PCA<-cbind(1:nrow(PCA)*10-9,PCA)
+colnames(PCA)<-c("Generation","File","R2m","R2c","DeltaAICc")
+
+Con8Hab8<-
+
+ggplot(Fst, aes(x = Generation, y = R2m)) +
+   geom_line() +
+   geom_line(data = Fst,
+              colour = 'red', size = 1) + 
+   geom_line()+
+   geom_line(data = Dps,
+              colour = 'forestgreen', size = 1) +
+   geom_line()+
+   geom_line(data = PCA,
+              colour = 'black', size = 1) +
+   geom_line()+
+   geom_line(data = Nei,
+              colour = 'blue', size = 1) +
+	ggtitle("Contagion 0.8 Habitat 0.8")
+
+
+All.plots<-list(Con2Hab2,Con2Hab5,Con2Hab8,Con5Hab2,Con5Hab5,Con5Hab8,Con8Hab2,Con8Hab5,Con8Hab8)
+
+###right now the legend takes up an entire column. is there a better way?
+multiplot(plotlist= All.plots,cols=4)
+
+
+plot_colors <- c("red","forestgreen", "black", "blue")
+text<-c("Fst", "Dps", "PCA","Nei's Da")
+        col=plot_colors, lwd=5, cex=.5, horiz = TRUE)
+
+legend("right",legend = text, text.width = max(sapply(text, strwidth)),
+       col=plot_colors, lwd=5, cex=1, horiz = FALSE)
+
