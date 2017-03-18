@@ -80,7 +80,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.2 Habitat 0.2")
+	ggtitle("Contagion 0.2 Habitat 0.2") +
+	scale_y_continuous(limits = c(0, 1))
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[2]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
@@ -113,7 +114,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.2 Habitat 0.5")
+	ggtitle("Contagion 0.2 Habitat 0.5") +
+	scale_y_continuous(limits = c(0, 1))
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[3]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
@@ -146,7 +148,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.2 Habitat 0.8")
+	ggtitle("Contagion 0.2 Habitat 0.8") +
+	scale_y_continuous(limits = c(0, 1))
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[4]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
@@ -179,7 +182,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.5 Habitat 0.2")
+	ggtitle("Contagion 0.5 Habitat 0.2") +
+	scale_y_continuous(limits = c(0, 1))
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[5]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
@@ -213,7 +217,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.5 Habitat 0.5")
+	ggtitle("Contagion 0.5 Habitat 0.5") +
+	scale_y_continuous(limits = c(0, 1))
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[6]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
@@ -246,7 +251,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.5 Habitat 0.8")
+	ggtitle("Contagion 0.5 Habitat 0.8") +
+	scale_y_continuous(limits = c(0, 1))
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[7]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
@@ -279,7 +285,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.8 Habitat 0.2")
+	ggtitle("Contagion 0.8 Habitat 0.2") +
+	scale_y_continuous(limits = c(0, 1))
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[8]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
@@ -312,7 +319,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.8 Habitat 0.5")
+	ggtitle("Contagion 0.8 Habitat 0.5") +
+	scale_y_continuous(limits = c(0, 1))
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[9]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
@@ -345,7 +353,8 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
    geom_line()+
    geom_line(data = Nei,
               colour = 'blue', size = 1) +
-	ggtitle("Contagion 0.8 Habitat 0.8")
+	ggtitle("Contagion 0.8 Habitat 0.8") +
+	scale_y_continuous(limits = c(0, 1))
 
 
 All.plots<-list(Con2Hab2,Con2Hab5,Con2Hab8,Con5Hab2,Con5Hab5,Con5Hab8,Con8Hab2,Con8Hab5,Con8Hab8)
