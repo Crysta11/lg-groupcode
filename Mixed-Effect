@@ -21,18 +21,20 @@ require(MuMIn)
 
 ###Code adapted from LDG-2016 course week 7 supplementary materials
 
-setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBR\\1IBR0.5_0.2-.8\\1_first3\\con5hab5")
+setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBR\\Genetic")
 
-directories<-list.dirs()
-(directories)
+Dirs<-list.dirs(getwd(),recursive=FALSE)
+
+for(j in 1:length(Dirs)){
+
+	setwd(Dirs[j])
+
+	directories<-list.dirs()
+
 
 #choose extant file directory
 Extant<-list.files(directories[2])
-head(Extant)
-###choose genetic files
 
-dire
-length(directories)
 for(k in 3:length(directories)){
 
 ##create output data frame
@@ -41,11 +43,12 @@ for(k in 3:length(directories)){
 ##choose genetic files
 	genetics<-list.files(directories[k])
 
+
 	for(i in 1:length(genetics)){
 		Gen<-as.matrix(read.csv(paste(c(directories[k],"/",genetics[i]),sep="",collapse=""),header=FALSE))
 		Gen<-Gen[lower.tri(Gen)]
 
-		extant.pop<-as.matrix(read.csv(paste(c(directories[2],"/",Extant[i]),sep="",collapse=""),header=FALSE)) 
+		extant.pop<-as.matrix(read.csv(paste(c(directories[2],"/",Extant[1]),sep="",collapse=""),header=FALSE)) 
 	
 	
 		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
@@ -117,10 +120,11 @@ for(k in 3:length(directories)){
 	}
 
 	OUT<-na.omit(OUT)
-	write.csv(OUT, paste(c(getwd(),"/",directories[k],"_GLMM",".csv"),sep="",collapse=""))
 
+	write.csv(OUT, paste(c(getwd(),"/",directories[k],"_GLMM",".csv"),sep="",collapse=""))
 }
 
+}
 ############################################
 ############################################
 ####r-squared beta method from Van Strien et al. (2012 Mol. Ecol.) and Row et al. (2015 Ecol and Evol)
