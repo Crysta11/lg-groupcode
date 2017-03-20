@@ -4,37 +4,37 @@ require(raster)
 require(rgdal)
 ##Assign where QRULE is saved and can be executed
 
-Qrule_exe<-paste("C:\\Users\\nba52\\Desktop\\QRULE\\QruleV4.exe")
+Qrule_exe<-paste("C:\\Users\\Nathan\\Desktop\\LDGProject\\QRULE\\QruleV4.exe")
 
 
 ##Set working directory to where you want files to call from and save too
 
-setwd("C:\\Users\\nba52\\Desktop\\QRULE\\")
-path<-"C:\\Users\\nba52\\Desktop\\QRULE" 
+setwd("C:\\Users\\Nathan\\Desktop\\LDGProject\\QRULE\\")
+path<-"C:\\Users\\Nathan\\Desktop\\LDGProject\\QRULE" 
 
 
 ##iterative contagion values-impacts how the cells are clustered
 
-Hvalues<-c(.1,.2,.3,.4,.5,.6,.7,.8,.9)
+Hvalues<-c(.2,.5,.8)
 
 ##iterative amounts of habitat 
 
-p1values<-c(.1,.2,.3,.4,.5,.6,.7,.8,.9)
+p1values<-c(.2,.5,.8)
 
 ##Execute all combinations of contagion and habitat probabilities
-Perms<-c(1:10)      #10 Permutations per map configuration
+Perms<-c(2:10)      #10 Permutations per map configuration
 Perms
-for(k in 1:length(Perms)){
-  
+for(z in 1:length(Perms)){
+
   for(i in 1:length(Hvalues)){
     Map<-"M"
     Level<-9
     Contagion<-Hvalues[i]
     Wrap<-"F"
-    neg.seed<--634535
+    neg.seed<--z^z^z
     neighbor<-2
     MapClass<-1
-  
+
       for(j in 1:length(p1values)){
         p1<-p1values[j]
         p2<-1-p1values[j]
@@ -52,7 +52,7 @@ for(k in 1:length(Perms)){
     ## rename the arcgrid.map file so that it won't be overwritten
     
     file.rename("arcgrid.map", paste("Maps\\",Name,sep="",collapse=" "))
-    
+Name    
      }
   
   }
@@ -64,7 +64,7 @@ for(k in 1:length(Perms)){
 ##convert text maps into an imagine raster
 ##save raster in a new folder; "Rasterized_Maps"
 
-setwd("C:\\Users\\nba52\\Desktop\\QRULE\\Maps\\")
+setwd("C:\\Users\\Nathan\\Desktop\\LDGProject\\QRULE\\Maps\\")
 Maps<-list.files()
 Maps
 for(i in 1:length(Maps)){
