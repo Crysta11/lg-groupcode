@@ -31,7 +31,7 @@ for(z in 1:length(Perms)){
     Level<-9
     Contagion<-Hvalues[i]
     Wrap<-"F"
-    neg.seed<--z^z^z
+    neg.seed<--z^z
     neighbor<-2
     MapClass<-1
 
