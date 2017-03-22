@@ -2,15 +2,16 @@ require(lme4)
 require(MuMIn)
 
 
+library(gtools)
 
 
 
 ###Code adapted from LDG-2016 course week 7 supplementary materials
 
-setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBR\\Genetics")
+setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBE\\Genetics")
 
 Dirs<-list.dirs(getwd(),recursive=FALSE)
-
+Dirs
 ##first two directories are IBR and IBD
 
 for(j in 1:sum(length(Dirs)-2)){
@@ -38,7 +39,8 @@ for(j in 1:sum(length(Dirs)-2)){
 	directories<-list.dirs()
 
 #choose extant file directory
-Extant<-list.files(directories[2])
+Extant<-mixedsort(list.files(directories[2]))
+
 
 ##First directory is just ".", and second are Extant populations, so start at directory 3
 for(k in 3:length(directories)){
@@ -47,7 +49,7 @@ for(k in 3:length(directories)){
 	OUT<-matrix(NA,ncol=3)
 
 ##choose genetic files
-	genetics<-list.files(directories[k])
+	genetics<-mixedsort(list.files(directories[k]))
 
 
 	for(i in 1:length(genetics)){
