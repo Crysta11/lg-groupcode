@@ -14,7 +14,10 @@ for(j in 1:sum(length(Dirs)-1)){
 #####DistMat and IBD distances will be consistent across each time step (time step151-651)
 	cost<-list.files(Dirs[1])
 	DistMat<-as.matrix(read.csv(paste(c(Dirs[1],"/",cost[j]),sep="",collapse=""),header=FALSE))
-	PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
+	PopDist<-as.matrix(DistMat[1:40,1:40]) #can subset by 1:40 because all IBE populations are the same size
+						#removing the duplicates did not work because habitat similarities were more
+						#sometimes duplicated costs, so was inadvertently removing
+						#extant populations
 
 ####Genetic distances and extant populations may change dependent on the timestep
 ##Pass over the IBR and IBD directories
