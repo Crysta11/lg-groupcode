@@ -1,6 +1,7 @@
 require(ggplot2)
 require(grid)
 require(gridExtra)
+require(gtools)
 
 
 ###Multiplot function
@@ -42,11 +43,12 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 ########
 
-setwd(choose.dir())
-Dps.list<-list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps")
-Fst.list<-list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst")
-Nei.list<-list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei")
-PCA.list<-list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA")
+##mixedsort from gtools keeps files in the correct order rather than how R reads them
+
+Dps.list<-mixedsort(list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBE_Analysis\\IBE_Results\\Dps"))
+Fst.list<-mixedsort(list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBE_Analysis\\IBE_Results\\Fst"))
+Nei.list<-mixedsort(list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBE_Analysis\\IBE_Results\\Nei"))
+PCA.list<-mixedsort(list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBE_Analysis\\IBE_Results\\PCA"))
 
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[1]),sep="",collapse=""),header=TRUE)
