@@ -1,14 +1,13 @@
 require(lme4)
 require(MuMIn)
+require(r2glmm)
 
-
-library(gtools)
 
 
 
 ###Code adapted from LDG-2016 course week 7 supplementary materials
 
-setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBE\\Genetics")
+setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Grav\\Gravity\\Genetics")
 
 Dirs<-list.dirs(getwd(),recursive=FALSE)
 Dirs
@@ -16,18 +15,14 @@ Dirs
 
 for(j in 1:sum(length(Dirs)-2)){
 
-
-
 #####DistMat and IBD distances will be consistent across each time step (time step151-651)
 	IBR<-list.files(Dirs[1])
-	DistMat<-as.matrix(read.csv(paste(c(Dirs[1],"/",IBR[j]),sep="",collapse=""),header=FALSE))
+	DistMat<-as.matrix(read.csv(paste(c(Dirs[1],"/",IBR[1]),sep="",collapse=""),header=FALSE))
 	PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
 
-	
 	IBD<-list.files(Dirs[2])
 	IBDDist<-as.matrix(read.csv(paste(c(Dirs[2],"/",IBD[j]),sep="",collapse=""),header=FALSE))
 	PopIBD<-as.matrix(IBDDist[!duplicated(IBDDist),!duplicated(IBDDist)])
-
 
 	##Will have to subset the distances based on which populations are surviving,
 	##so we will take the lower.tri of the matrices within the Genetic for-loop section
@@ -37,31 +32,28 @@ for(j in 1:sum(length(Dirs)-2)){
 	setwd(Dirs[j+2])
 
 	directories<-list.dirs()
-
+directories
 #choose extant file directory
-Extant<-mixedsort(list.files(directories[2]))
-
+Extant<-list.files(directories[2])
 
 ##First directory is just ".", and second are Extant populations, so start at directory 3
 for(k in 3:length(directories)){
 
 ##create output data frame
-	OUT<-matrix(NA,ncol=3)
+	OUT<-matrix(NA,ncol=5)
 
 ##choose genetic files
-	genetics<-mixedsort(list.files(directories[k]))
-
+	genetics<-list.files(directories[k])
 
 	for(i in 1:length(genetics)){
 		Gen<-as.matrix(read.csv(paste(c(directories[k],"/",genetics[i]),sep="",collapse=""),header=FALSE))
 		Gen<-Gen[lower.tri(Gen)]
 
 		extant.pop<-as.matrix(read.csv(paste(c(directories[2],"/",Extant[i]),sep="",collapse=""),header=FALSE)) 
-	
+
 	
 		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
 		pop1 <- pop1[lower.tri(pop1)]
-
 		pop2 <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
 		pop2 <- pop2[lower.tri(pop2)]
 
@@ -102,8 +94,9 @@ for(k in 3:length(directories)){
 
 		R2<-r.squaredGLMM(mod_1)
 
-		###create a null model
+		R2B<-r2beta(mod_1,partial=FALSE)
 
+		###create a null model
 		mod2 <- lFormula(Gen ~ 1  + (1|pop1), data = Distmat, REML = TRUE)
 			mod2$reTrms$Zt <- ZZ
 			dfun2 <- do.call(mkLmerDevfun,mod2)
@@ -118,9 +111,11 @@ for(k in 3:length(directories)){
 		##based on populations as a single term.
 
 		D.AICc<-AICc(mod_1)-AICc(mod_2)
+		REML.crit<-getME(mod_1,"devcomp")
+		REML.crit<-a$cmp[7]
 
-		output<-cbind(R2[1],R2[2],D.AICc)
-		colnames(output)<-c("R2m","R2c","Delta.AICc")
+		output<-cbind(R2[1],R2[2],R2B$Rsq,D.AICc,REML.crit)
+		colnames(output)<-c("R2m","R2c","R2beta","Delta.AICc","REML Criterion")
 		rownames(output)<-genetics[i]
 
 		OUT<-rbind(OUT,output)
@@ -130,17 +125,9 @@ for(k in 3:length(directories)){
 	OUT<-na.omit(OUT)
 
 
-	write.csv(OUT, paste(c(getwd(),"/",directories[k],"_GLMM",".csv"),sep="",collapse=""))
-	write.csv(OUT, paste(c(getwd(),directories[k],j,"_GLMM",".csv"),sep="",collapse=""))
+	write.csv(OUT, paste(c(getwd(),"/",directories[k],"_GLMMgrav",".csv"),sep="",collapse=""))
+	write.csv(OUT, paste(c(getwd(),directories[k],j,"_GLMMgrav",".csv"),sep="",collapse=""))
 }
 
 
 }
-############################################
-############################################
-####r-squared beta method from Van Strien et al. (2012 Mol. Ecol.) and Row et al. (2015 Ecol and Evol)
-#a<-KRmodcomp(mod_1, mod_2, betaH=0, details=0)
-#summary(a)
-###This function can be used to extract the F-value if we want to proceed with the r-squared beta method
-#getKR(a,"aux")#,"ndf", "ddf"))#, "Fstat", "p.value",
-#"F.scaling", "FstatU", "p.valueU", "aux"))
