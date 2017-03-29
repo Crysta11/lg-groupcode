@@ -82,7 +82,7 @@ Extant<-list.files(directories[2])
 for(k in 3:length(directories)){
 
 ##create output data frame
-	OUT<-matrix(NA,ncol=5)
+	OUT<-matrix(NA,ncol=6)
 
 ##choose genetic files-this will cycle through  "Dps","Fst","Nei", and "PCA" fiels
 	genetics<-list.files(directories[k])
@@ -133,10 +133,15 @@ for(k in 3:length(directories)){
 		##Row et al. (2015 Ecol and Evol) found that this r.squaredGLMM function better		
 		##aligned with AICc output than the R-squared beta suggested by Van Strien et al. (2012 Mol. Ecol.)
 		## and Edwards et al. (2008 Stat. Med.)
+		
+		#Row et al. recommended:
+			R2<-r.squaredGLMM(mod_1)
 
-		R2<-r.squaredGLMM(mod_1)
-
-		R2B<-r2beta(mod_1,partial=FALSE)
+		#Edwards et al:
+			R2B<-r2beta(mod_1,partial=FALSE)
+		
+		#get the root mean square errors, too, why not.
+			RMSE<-summary(mod_1)$sigma
 
 		###create a null model
 		mod2 <- lFormula(Gen ~ 1  + (1|pop1), data = Distmat, REML = TRUE)
@@ -156,8 +161,8 @@ for(k in 3:length(directories)){
 		REML.crit<-getME(mod_1,"devcomp")
 		REML.crit<-a$cmp[7]
 
-		output<-cbind(R2[1],R2[2],R2B$Rsq,D.AICc,REML.crit)
-		colnames(output)<-c("R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+		output<-cbind(R2[1],R2[2],R2B$Rsq,RMSE,D.AICc,REML.crit)
+		colnames(output)<-c("R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 		rownames(output)<-genetics[i]
 
 		OUT<-rbind(OUT,output)
