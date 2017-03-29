@@ -384,13 +384,13 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 All.plots<-list(Con2Hab2,Con2Hab5,Con2Hab8,Con5Hab2,Con5Hab5,Con5Hab8,Con8Hab2,Con8Hab5,Con8Hab8)
 
 ###right now the legend takes up an entire column. is there a better way?
-multiplot(plotlist= All.plots,cols=4)
-
-
+plot.new()
 plot_colors <- c("red","forestgreen", "black", "blue")
 text<-c("Fst", "Dps", "PCA","Nei's Da")
-        col=plot_colors, lwd=5, cex=.5, horiz = TRUE)
 
+	
+multiplot(plotlist= All.plots,cols=4)
 legend("right",legend = text, text.width = max(sapply(text, strwidth)),
        col=plot_colors, lwd=5, cex=1, horiz = FALSE)
+       
 
