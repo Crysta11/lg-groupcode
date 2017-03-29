@@ -7,19 +7,55 @@ require(r2glmm)
 
 ###Code adapted from LDG-2016 course week 7 supplementary materials
 
+#----------------------------File Management--------------------------#
+
+##Directory where all the genetics are.  File management is as follows:
+#First folder within the genetics folder contains IBR distance matrices, folder named "1_Cost"
+#second folder contains IBD distnaces, folder named "2_IBD"
+#There are duplicate cost/IBD files equal to the number of MC runs being analyzed
+#Rest of the folders are folders of Genetic output for each MC run
+#Within each MC run folders, there are folders for "Extant" and genetic distances.
+#The Extant files should be relabeled to "1_Extant" so it won't interfere with the for-loop later
+#Output files will be written to MC run folders.
+
+#-------------------------Directory Map-------------------------------#
+#	Genetics
+#		1_Cost
+#		2_IBD
+#		con2hab2
+#			-1_Extant
+#			-Dps
+#			-Fst
+#			-Nei
+#			-PCA
+#			-[file output]
+
+#---------------------------------------------------------------------#
+
 setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Grav\\Gravity\\Genetics")
 
 Dirs<-list.dirs(getwd(),recursive=FALSE)
-Dirs
-##first two directories are IBR and IBD
+
+#Dirs lists the cost, IBD, and MC run files
+
+##first two directories are IBR and IBD, so need to remove 2 for the length of Dirs
+##in the for-loop
 
 for(j in 1:sum(length(Dirs)-2)){
 
 #####DistMat and IBD distances will be consistent across each time step (time step151-651)
+
+#this lists the cost distance associated for each MC run
+
 	IBR<-list.files(Dirs[1])
+	
+#This will read in the cost file associated for each MC run
 	DistMat<-as.matrix(read.csv(paste(c(Dirs[1],"/",IBR[1]),sep="",collapse=""),header=FALSE))
+	
+#Because the files are individuals, we subset down to populations by not getting duplicates
 	PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
 
+#Do the same for IBD 
 	IBD<-list.files(Dirs[2])
 	IBDDist<-as.matrix(read.csv(paste(c(Dirs[2],"/",IBD[j]),sep="",collapse=""),header=FALSE))
 	PopIBD<-as.matrix(IBDDist[!duplicated(IBDDist),!duplicated(IBDDist)])
@@ -28,11 +64,17 @@ for(j in 1:sum(length(Dirs)-2)){
 	##so we will take the lower.tri of the matrices within the Genetic for-loop section
 
 ####Genetic distances and extant populations may change dependent on the timestep
-##Pass over the IBR and IBD directories
+
+## Because the first 2 files are Cost and IBD, start on the 3rd directory
+
 	setwd(Dirs[j+2])
 
+##directories will be the "1_Extant" and the genetic distance files
+
 	directories<-list.dirs()
-directories
+
+##The first directory is the "." directory, so start with "./1_Extant"
+
 #choose extant file directory
 Extant<-list.files(directories[2])
 
@@ -42,7 +84,7 @@ for(k in 3:length(directories)){
 ##create output data frame
 	OUT<-matrix(NA,ncol=5)
 
-##choose genetic files
+##choose genetic files-this will cycle through  "Dps","Fst","Nei", and "PCA" fiels
 	genetics<-list.files(directories[k])
 
 	for(i in 1:length(genetics)){
@@ -124,6 +166,8 @@ for(k in 3:length(directories)){
 
 	OUT<-na.omit(OUT)
 
+###I have two options for writing files; they are written to the MC run folder, but when working with them later,
+##may help to have a numeric [j] value associated with the file
 
 	write.csv(OUT, paste(c(getwd(),"/",directories[k],"_GLMMgrav",".csv"),sep="",collapse=""))
 	write.csv(OUT, paste(c(getwd(),directories[k],j,"_GLMMgrav",".csv"),sep="",collapse=""))
