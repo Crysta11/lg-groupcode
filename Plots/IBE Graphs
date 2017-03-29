@@ -43,6 +43,9 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 ########
 
+#------------------IBE plotting code has the same notes as the GLMM plotting code-------------#
+##only difference is that the output files have different column names
+
 
 Dps.list<-mixedsort(list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBE_Analysis\\IBE_Results\\Dps"))
 Fst.list<-mixedsort(list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBE_Analysis\\IBE_Results\\Fst"))
@@ -361,12 +364,13 @@ ggplot(Fst, aes(x = Generation, y = r2)) +
 All.plots<-list(Con2Hab2,Con2Hab5,Con2Hab8,Con5Hab2,Con5Hab5,Con5Hab8,Con8Hab2,Con8Hab5,Con8Hab8)
 
 ###right now the legend takes up an entire column. is there a better way?
-multiplot(plotlist= All.plots,cols=4)
+
 
 plot.new()
 plot_colors <- c("red","forestgreen", "black", "blue")
 text<-c("Fst", "Dps", "PCA","Nei's Da")
-        col=plot_colors, lwd=5, cex=.5, horiz = TRUE)
+
+multiplot(plotlist= All.plots,cols=4)
 
 legend("right",legend = text, text.width = max(sapply(text, strwidth)),
        col=plot_colors, lwd=5, cex=1, horiz = FALSE)
