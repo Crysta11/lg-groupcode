@@ -38,11 +38,6 @@ Dirs<-list.dirs(getwd(),recursive=FALSE)
 
 #Dirs lists the cost, IBD, and MC run files
 
-##first two directories are IBR and IBD, so need to remove 2 for the length of Dirs
-##in the for-loop
-
-for(j in 1:sum(length(Dirs)-2)){
-
 #####DistMat and IBD distances will be consistent across each time step (time step151-651)
 
 #this lists the cost distance associated for each MC run
@@ -63,13 +58,18 @@ for(j in 1:sum(length(Dirs)-2)){
 	##Will have to subset the distances based on which populations are surviving,
 	##so we will take the lower.tri of the matrices within the Genetic for-loop section
 
+##first two directories are IBR and IBD, so need to remove 2 for the length of Dirs
+##in the for-loop
+
+for(j in 1:sum(length(Dirs)-2)){
+
 ####Genetic distances and extant populations may change dependent on the timestep
 
 ## Because the first 2 files are Cost and IBD, start on the 3rd directory
 
 	setwd(Dirs[j+2])
 
-##directories will be the "1_Extant" and the genetic distance files
+##directories will be the "1_Extant" and the genetic distance folders
 
 	directories<-list.dirs()
 
@@ -89,22 +89,24 @@ for(k in 3:length(directories)){
 
 	for(i in 1:length(genetics)){
 		Gen<-as.matrix(read.csv(paste(c(directories[k],"/",genetics[i]),sep="",collapse=""),header=FALSE))
-		Gen<-Gen[lower.tri(Gen)]
+		Gen<-Gen[lower.tri(Gen),diag=FALSE]
 
 		extant.pop<-as.matrix(read.csv(paste(c(directories[2],"/",Extant[i]),sep="",collapse=""),header=FALSE)) 
 
-	
+		#Pop 1 makes a from population
 		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
-		pop1 <- pop1[lower.tri(pop1)]
+		pop1 <- pop1[lower.tri(pop1),diag=FALSE]
+		
+		#Pop 2 makes a to population
 		pop2 <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
-		pop2 <- pop2[lower.tri(pop2)]
+		pop2 <- pop2[lower.tri(pop2),diag=FALSE]
 
-
+		#resample the cost distances for the matrices
 		PopDist1<-PopDist[extant.pop[,1],extant.pop[,1]]
 		PopIBD1<-PopIBD[extant.pop[,1],extant.pop[,1]]
 	
-		PopDist1<-PopDist1[lower.tri(PopDist1)]
-		PopIBD1<-PopIBD1[lower.tri(PopIBD1)]
+		PopDist1<-PopDist1[lower.tri(PopDist1),diag=FALSE]
+		PopIBD1<-PopIBD1[lower.tri(PopIBD1),diag=FALSE]
 
 		PopDist1 <- scale(PopDist1)      # Each predictor variable is centred around the mean.
 		PopIBD1<-scale(PopIBD1)	
@@ -159,7 +161,7 @@ for(k in 3:length(directories)){
 
 		D.AICc<-AICc(mod_1)-AICc(mod_2)
 		REML.crit<-getME(mod_1,"devcomp")
-		REML.crit<-a$cmp[7]
+		REML.crit<-REML.crit$cmp[7]
 
 		output<-cbind(R2[1],R2[2],R2B$Rsq,RMSE,D.AICc,REML.crit)
 		colnames(output)<-c("R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
