@@ -45,18 +45,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 
 #-----------------------File Management-----------------------------#
-##Move the files you want graphed into a unique result folder. The graphing code only processes 1 MC run
-#	Results
-#		-Dps
-#		-Fst
-#		-Nei
-#		-PCA
 
-##each genetic folder should contain 9 files; one for each map type.
-##to change between genetic driver folders, take the code into notepad, and use "ctrl H"
-##	to find and replace directory pathways.
-
-#-------------------------------------------------------------------#
 
 ##mixedsort from gtools keeps files in the correct order rather than how R reads them
 
@@ -66,28 +55,21 @@ Nei.list<-mixedsort(list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBR_A
 PCA.list<-mixedsort(list.files("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\IBR_Analysis\\IBE_Results\\PCA"))
 
 
-#same for all genetic read-ins:
-# read in genetic distance file
-##create and arbitrary generation since isolating effect column
-#	this does not match perfectly with IBE because the first sample for IBE
-#	is 5 years after the isolating effect
-#assign column names so ggplot can call the data from the function
-
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[1]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[1]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[1]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[1]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Con2Hab2<-
 
@@ -109,19 +91,19 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[2]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[2]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[2]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[2]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Con2Hab5<-
 
@@ -143,19 +125,19 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[3]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[3]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[3]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[3]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Con2Hab8<-
 
@@ -177,19 +159,19 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[4]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[4]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[4]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[4]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Con5Hab2<-
 
@@ -211,19 +193,19 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[5]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[5]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[5]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[5]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 
 Con5Hab5<-
@@ -246,19 +228,19 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[6]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[6]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[6]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[6]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Con5Hab8<-
 
@@ -280,19 +262,19 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[7]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[7]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[7]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[7]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Con8Hab2<-
 
@@ -314,19 +296,19 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[8]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[8]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[8]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[8]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Con8Hab5<-
 
@@ -348,19 +330,19 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 
 Dps<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Dps\\",Dps.list[9]),sep="",collapse=""),header=TRUE)
 Dps<-cbind(1:nrow(Dps)*10-9,Dps)
-colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Dps)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Fst<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Fst\\",Fst.list[9]),sep="",collapse=""),header=TRUE)
 Fst<-cbind(1:nrow(Fst)*10-9,Fst)
-colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Fst)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Nei<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\Nei\\",Nei.list[9]),sep="",collapse=""),header=TRUE)
 Nei<-cbind(1:nrow(Nei)*10-9,Nei)
-colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(Nei)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 PCA<-read.csv(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Results\\Between-Site Drivers\\PCA\\",PCA.list[9]),sep="",collapse=""),header=TRUE)
 PCA<-cbind(1:nrow(PCA)*10-9,PCA)
-colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","Delta.AICc","REML Criterion")
+colnames(PCA)<-c("Generation","File","R2m","R2c","R2beta","RMSE","Delta.AICc","REML Criterion")
 
 Con8Hab8<-
 
@@ -384,13 +366,13 @@ ggplot(Fst, aes(x = Generation, y = R2m)) +
 All.plots<-list(Con2Hab2,Con2Hab5,Con2Hab8,Con5Hab2,Con5Hab5,Con5Hab8,Con8Hab2,Con8Hab5,Con8Hab8)
 
 ###right now the legend takes up an entire column. is there a better way?
-plot.new()
+multiplot(plotlist= All.plots,cols=4)
+
+
 plot_colors <- c("red","forestgreen", "black", "blue")
 text<-c("Fst", "Dps", "PCA","Nei's Da")
+        col=plot_colors, lwd=5, cex=.5, horiz = TRUE)
 
-	
-multiplot(plotlist= All.plots,cols=4)
 legend("right",legend = text, text.width = max(sapply(text, strwidth)),
        col=plot_colors, lwd=5, cex=1, horiz = FALSE)
-       
 
