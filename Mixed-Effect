@@ -43,9 +43,14 @@ Dirs<-list.dirs(getwd(),recursive=FALSE)
 #this lists the cost distance associated for each MC run
 
 	IBR<-list.files(Dirs[1])
-	
+
+##first two directories are IBR and IBD, so need to remove 2 for the length of Dirs
+##in the for-loop
+
+for(j in 1:sum(length(Dirs)-2)){
+
 #This will read in the cost file associated for each MC run
-	DistMat<-as.matrix(read.csv(paste(c(Dirs[1],"/",IBR[1]),sep="",collapse=""),header=FALSE))
+	DistMat<-as.matrix(read.csv(paste(c(Dirs[1],"/",IBR[j]),sep="",collapse=""),header=FALSE))
 	
 #Because the files are individuals, we subset down to populations by not getting duplicates
 	PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
@@ -57,11 +62,6 @@ Dirs<-list.dirs(getwd(),recursive=FALSE)
 
 	##Will have to subset the distances based on which populations are surviving,
 	##so we will take the lower.tri of the matrices within the Genetic for-loop section
-
-##first two directories are IBR and IBD, so need to remove 2 for the length of Dirs
-##in the for-loop
-
-for(j in 1:sum(length(Dirs)-2)){
 
 ####Genetic distances and extant populations may change dependent on the timestep
 
