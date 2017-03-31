@@ -119,7 +119,7 @@ RootRsq_NULL<-as.numeric(unlist(regmatches(val_NULL,gregexpr("[[:digit:]]+\\.*[[
 val_mixed<-summary(mod_mixed)
 RootRsq_mixed<-as.numeric(unlist(regmatches(val_mixed,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed))))
 
-val_C<-summary(mod_mixed_null)
+val_mixed_null<-summary(mod_mixed_null)
 RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed_null))))
 ##bind the RMSE and AIC output
 
