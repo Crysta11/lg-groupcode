@@ -54,57 +54,47 @@ for(k in 3:length(directories)){
 for(i in 1:length(genetics)){
 
 		Gen<-as.matrix(read.csv(paste(c(directories[k],"/",genetics[i]),sep="",collapse=""),header=FALSE))
-		Gen<-Gen[lower.tri(Gen)]
-
+		
 		extant.pop<-as.matrix(read.csv(paste(c(directories[2],"/",Extant[i]),sep="",collapse=""),header=FALSE)) 
 
 
 		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
-		pop1 <- pop1[lower.tri(pop1)]
+		
 		pop2 <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
-		pop2 <- pop2[lower.tri(pop2)]
+	
 
 		PopDist1<-PopDist[extant.pop[,1],extant.pop[,1]]
 		PopIBD1<-PopIBD[extant.pop[,1],extant.pop[,1]]
 		habitat1<-habitat[extant.pop[,1],extant.pop[,1]]
-
-		PopDist1<-PopDist1[lower.tri(PopDist1)]
-		PopIBD1<-PopIBD1[lower.tri(PopIBD1)]
-		habitat1<-habitat1[lower.tri(habitat1)]
+		Null<-matrix(1,nrow=nrow(habitat1),ncol=ncol(habitat1))
 
 		PopDist1 <- scale(PopDist1)      # Each predictor variable is centred around the mean.
 		PopIBD1<-scale(PopIBD1)	
 		Gen<-scale(Gen)
 		Hab<-scale(habitat1)	
 
-	Distmat <- data.frame(pop1, pop2, PopDist1, PopIBD1, habitat1, Gen)
+	Distmat <- data.frame(pop1, pop2, PopDist1, PopIBD1, Hab, Gen, Null)
 
 
 
 ##Not sure of the difference, so there's a constrained and unconstrained model
 
-mod_C<-gravity(y="Gen",group="pop1",data=Distmat,ln=FALSE,constrained=TRUE)
-mod_U<-gravity(y="Gen",x="habitat1",d="PopDist1",group="pop1",data=Distmat,ln=FALSE,constrained=FALSE)
-
+mod_C<-gravity(y="Gen",x=c("Hab","PopDist1"),d="PopIBD1",group="pop1",data=Distmat,ln=TRUE,constrained=TRUE)
+mod_NULL<-gravity(y="Gen",x="Null",d="PopIBD1",group="pop1",data=Distmat,ln=TRUE,constrained=TRUE)
 
 #Extract the RMSE value from the model... since it's in astring, need to cut it from the string
 
 val_C<-summary(mod_C)
 RootRsq_C<-as.numeric(unlist(regmatches(val_C,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_C))))
 
-val_U<-summary(mod_U)
-RootRsq_U<-as.numeric(unlist(regmatches(val_U,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_U))))
-
 ##bind the RMSE and AIC output
 
 		output_C<-cbind(RootRsq_C,mod_C$AIC)
-		output_U<-cbind(RootRsq_U,mod_U$AIC)
-	
+
  #name the columns and rows
 	colnames(output_C)<-c("RMSE","AIC")
-	colnames(output_U)<-c("RMSE","AIC")
-		rownames(output_C)<-genetics[i]
-		rownames(output_U)<-genetics[i]
+	rownames(output_C)<-genetics[i]
+
 
 		OUT_C<-rbind(OUT,output_C)
 		OUT_U<-rbind(OUT,output_U)
