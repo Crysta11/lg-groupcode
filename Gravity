@@ -4,7 +4,7 @@ require(GeNetIt)
 
 setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Grav_Grav\\Gravity\\Genetics")
 Dirs<-list.dirs(getwd(),recursive=FALSE)
-Dirs
+
 ##first two directories are IBR and IBD
 for(j in 1:sum(length(Dirs)-2)){
 
@@ -12,7 +12,7 @@ for(j in 1:sum(length(Dirs)-2)){
 
 #####DistMat and IBD distances will be consistent across each time step (time step151-651)
 	IBR<-list.files(Dirs[1])
-j<-1
+
 	DistMat<-as.matrix(read.csv(paste(c(Dirs[1],"/",IBR[j]),sep="",collapse=""),header=FALSE))
 	PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
 
@@ -30,7 +30,7 @@ j<-1
 	PopSize<-PopSize[,1]
 	habitat<-(PopSize-10)/600
 	habitat1 <- t(matrix(c(habitat),length(habitat),length(habitat)))
-habitat1
+
 ####Genetic distances and extant populations may change dependent on the timestep
 ##Pass over the IBR and IBD directories
 
@@ -42,18 +42,18 @@ habitat1
 	directories<-list.dirs()
 
 Extant<-list.files(directories[2])
-k<-3
+
 ##First directory is just ".", and second are Extant populations, so start at directory 3
 for(k in 3:length(directories)){
 
 ##create output data frames
-	OUT_U<-matrix(NA,ncol=2)
-	OUT_C<-matrix(NA,ncol=2)
+	OUT_gravity<-matrix(NA,ncol=3)
+	OUT_glmm<-matrix(NA,ncol=3)
 
 	genetics<-list.files(directories[k])
 
 for(i in 1:length(genetics)){
-i<-50
+
 		Gen<-as.matrix(read.csv(paste(c(directories[k],"/",genetics[i]),sep="",collapse=""),header=FALSE))
 		diag(Gen)<-NA
 		Gen<-as.vector(Gen)
