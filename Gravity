@@ -4,7 +4,7 @@ require(GeNetIt)
 
 setwd("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\Grav_Grav\\Gravity\\Genetics")
 Dirs<-list.dirs(getwd(),recursive=FALSE)
-
+Dirs
 ##first two directories are IBR and IBD
 for(j in 1:sum(length(Dirs)-2)){
 
@@ -12,6 +12,7 @@ for(j in 1:sum(length(Dirs)-2)){
 
 #####DistMat and IBD distances will be consistent across each time step (time step151-651)
 	IBR<-list.files(Dirs[1])
+j<-1
 	DistMat<-as.matrix(read.csv(paste(c(Dirs[1],"/",IBR[j]),sep="",collapse=""),header=FALSE))
 	PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
 
@@ -28,8 +29,8 @@ for(j in 1:sum(length(Dirs)-2)){
 	PopSize<-as.matrix(table(DistMat[,1]))
 	PopSize<-PopSize[,1]
 	habitat<-(PopSize-10)/600
-	habitat <- t(matrix(c(habitat),length(habitat),length(habitat)))
-
+	habitat1 <- t(matrix(c(habitat),length(habitat),length(habitat)))
+habitat1
 ####Genetic distances and extant populations may change dependent on the timestep
 ##Pass over the IBR and IBD directories
 
@@ -41,7 +42,7 @@ for(j in 1:sum(length(Dirs)-2)){
 	directories<-list.dirs()
 
 Extant<-list.files(directories[2])
-
+k<-3
 ##First directory is just ".", and second are Extant populations, so start at directory 3
 for(k in 3:length(directories)){
 
@@ -52,7 +53,7 @@ for(k in 3:length(directories)){
 	genetics<-list.files(directories[k])
 
 for(i in 1:length(genetics)){
-
+i<-50
 		Gen<-as.matrix(read.csv(paste(c(directories[k],"/",genetics[i]),sep="",collapse=""),header=FALSE))
 		diag(Gen)<-NA
 		Gen<-as.vector(Gen)
@@ -81,57 +82,71 @@ for(i in 1:length(genetics)){
 		PopIBD1<-as.vector(PopIBD1)
 		PopIBD1<-na.omit(PopIBD1)
 		
-		habitat1<-habitat[extant.pop[,1],extant.pop[,1]]
-		diag(habitat1)<-NA
-		habitat1<-as.vector(habitat1)
-		habitat1<-na.omit(habitat1)
+		habitat2<-habitat1[extant.pop[,1],extant.pop[,1]]
+		diag(habitat2)<-NA
+		habitat2<-as.vector(habitat2)
+		habitat2<-na.omit(habitat2)
 		
-		Null<-matrix(1,nrow=nrow(habitat1),ncol=ncol(habitat1))
-		diag(Null)<-NA
-		Null<-as.vector(Null)
-		Null<-na.omit(Null)
+		Null<-rep(1,length.out=length(habitat2))
 
 		PopDist1 <- scale(PopDist1)      # Each predictor variable is centred around the mean.
 		PopIBD1<-scale(PopIBD1)	
 		Gen<-scale(Gen)
-		Hab<-scale(habitat1)	
+		Hab<-scale(habitat2)	
 
 	Distmat <- data.frame(pop1, pop2, PopDist1, PopIBD1, Hab, Gen, Null)
-
 
 
 ##Not sure of the difference, so there's a constrained and unconstrained model
 
 mod_C<-gravity(y="Gen",x=c("Hab","PopDist1"),d="PopIBD1",group="pop1",data=Distmat,ln=TRUE,constrained=TRUE)
-mod_mixed<-gravity(y="Gen",x="PopDist1",d="PopIBD1",group="pop1",data=Distmat, ln=FALSE, constrained=TRUE)
 mod_NULL<-gravity(y="Gen",x="Null",d="PopIBD1",group="pop1",data=Distmat,ln=TRUE,constrained=TRUE)
+
+
+mod_mixed<-gravity(y="Gen",x="PopDist1",d="PopIBD1",group="pop1",data=Distmat, ln=FALSE, constrained=TRUE)
 mod_mixed_null<-gravity(y="Gen", x="Null",d="PopIBD1",group="pop1", data=Distmat, ln=FALSE, constrained=TRUE)
+
+
 
 #Extract the RMSE value from the model... since it's in astring, need to cut it from the string
 
 val_C<-summary(mod_C)
 RootRsq_C<-as.numeric(unlist(regmatches(val_C,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_C))))
 
+val_NULL<-summary(mod_NULL)
+RootRsq_NULL<-as.numeric(unlist(regmatches(val_NULL,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_NULL))))
+
+val_mixed<-summary(mod_mixed)
+RootRsq_mixed<-as.numeric(unlist(regmatches(val_mixed,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed))))
+
+val_C<-summary(mod_mixed_null)
+RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed_null))))
 ##bind the RMSE and AIC output
 
-		output_C<-cbind(RootRsq_C,mod_C$AIC)
+		delta.aic.grav<-mod_C$AIC-mod_NULL$AIC
+		output_gravity<-cbind(RootRsq_C,RootRsq_NULL,delta.aic.grav)
+
+		delta.aic.glmm<-mod_mixed$AIC-mod_mixed_null$AIC
+		output_glmm<-cbind(RootRsq_mixed,RootRsq_mixed_null,delta.aic.glmm)
 
  #name the columns and rows
-	colnames(output_C)<-c("RMSE","AIC")
-	rownames(output_C)<-genetics[i]
+	colnames(output_gravity)<-c("RMSE","RMSE Null","delta AIC")
+	rownames(output_graviy)<-genetics[i]
 
+	colnames(output_glmm)<-c("RMSE","RMSE Null","delta AIC")
+	rownames(output_glmm)<-genetics[i]
 
-		OUT_C<-rbind(OUT,output_C)
-		OUT_U<-rbind(OUT,output_U)
+		OUT_gravity<-rbind(OUT_gravity,output_gravity)
+		OUT_glmm<-rbind(OUT_glmm,output_glmm)
 
 }
 
 #omit the initial NAs
-	OUT_C<-na.omit(OUT_C)
-	OUT_U<-na.omit(OUT_U)
+	OUT_gravity<-na.omit(OUT_gravity)
+	OUT_glmm<-na.omit(OUT_glmm)
 
-	write.csv(OUT_C, paste(c(getwd(),"/",directories[k],"_Grav_C",".csv"),sep="",collapse=""))
-	write.csv(OUT_U, paste(c(getwd(),directories[k],j,"_Grav_U",".csv"),sep="",collapse=""))
+	write.csv(OUT_gravity, paste(c(getwd(),"/",directories[k],"_Grav",".csv"),sep="",collapse=""))
+	write.csv(OUT_glmm, paste(c(getwd(),directories[k],j,"_GLMM",".csv"),sep="",collapse=""))
 }
 
 
