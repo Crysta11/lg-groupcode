@@ -104,6 +104,7 @@ for(k in 3:length(directories)){
 		#Pop 2 makes a to population
 		pop2 <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
 		diag(pop2)<-NA
+		pop2<-as.vector(pop2)
 		pop2 <- na.omit(pop2)
 
 		#resample the cost distances for the matrices
@@ -113,6 +114,7 @@ for(k in 3:length(directories)){
 		diag(PopDist1)<-NA
 		PopDist1<-as.vector(PopDist1)
 		PopDist1<-na.omit(PopDist1)
+		
 		diag(PopIBD1)<-NA
 		PopIBD1<-as.vector(PopIBD1)
 		PopIBD1<-na.omit(PopIBD1)
