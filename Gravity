@@ -105,7 +105,7 @@ for(i in 1:length(genetics)){
 mod_C<-gravity(y="Gen",x=c("Hab","PopDist1"),d="PopIBD1",group="pop1",data=Distmat,ln=TRUE,constrained=TRUE)
 mod_mixed<-gravity(y="Gen",x="PopDist1",d="PopIBD1",group="pop1",data=Distmat, ln=FALSE, constrained=TRUE)
 mod_NULL<-gravity(y="Gen",x="Null",d="PopIBD1",group="pop1",data=Distmat,ln=TRUE,constrained=TRUE)
-mod_mixed_null<-gravity(y="Gen", x="Null",d="PopIBD1", data=Distmat, ln=FALSE, constrained=TRUE)
+mod_mixed_null<-gravity(y="Gen", x="Null",d="PopIBD1",group="pop1", data=Distmat, ln=FALSE, constrained=TRUE)
 
 #Extract the RMSE value from the model... since it's in astring, need to cut it from the string
 
