@@ -87,25 +87,26 @@ for(i in 1:length(genetics)){
 		habitat2<-as.vector(habitat2)
 		habitat2<-na.omit(habitat2)
 		
-		Null<-rep(1,length.out=length(habitat2))
+		#Null<-rep(1,length.out=length(habitat2))
 
+#assign each to/from pair a random number for the null matrices currently
+
+		Null<-sample(1:length(habitat2), length(habitat2), replace=F)
 		PopDist1 <- scale(PopDist1)      # Each predictor variable is centred around the mean.
 		PopIBD1<-scale(PopIBD1)	
 		Gen<-scale(Gen)
-		Hab<-scale(habitat2)	
+		Hab<-scale(habitat2)
+		Null<-scale(Null)	
 
 	Distmat <- data.frame(pop1, pop2, PopDist1, PopIBD1, Hab, Gen, Null)
 
-
-##Not sure of the difference, so there's a constrained and unconstrained model
-
 mod_C<-gravity(y="Gen",x=c("Hab","PopDist1"),d="PopIBD1",group="pop1",data=Distmat,ln=TRUE,constrained=TRUE)
 mod_NULL<-gravity(y="Gen",x="Null",d="PopIBD1",group="pop1",data=Distmat,ln=TRUE,constrained=TRUE)
-
+mod_NULL
+mod_C
 
 mod_mixed<-gravity(y="Gen",x="PopDist1",d="PopIBD1",group="pop1",data=Distmat, ln=FALSE, constrained=TRUE)
 mod_mixed_null<-gravity(y="Gen", x="Null",d="PopIBD1",group="pop1", data=Distmat, ln=FALSE, constrained=TRUE)
-
 
 
 #Extract the RMSE value from the model... since it's in astring, need to cut it from the string
@@ -131,7 +132,7 @@ RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:dig
 
  #name the columns and rows
 	colnames(output_gravity)<-c("RMSE","RMSE Null","delta AIC")
-	rownames(output_graviy)<-genetics[i]
+	rownames(output_gravity)<-genetics[i]
 
 	colnames(output_glmm)<-c("RMSE","RMSE Null","delta AIC")
 	rownames(output_glmm)<-genetics[i]
@@ -145,7 +146,7 @@ RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:dig
 	OUT_gravity<-na.omit(OUT_gravity)
 	OUT_glmm<-na.omit(OUT_glmm)
 
-	write.csv(OUT_gravity, paste(c(getwd(),"/",directories[k],"_Grav",".csv"),sep="",collapse=""))
+	write.csv(OUT_gravity, paste(c(getwd(),"/",directories[k],j,"_Grav",".csv"),sep="",collapse=""))
 	write.csv(OUT_glmm, paste(c(getwd(),directories[k],j,"_GLMM",".csv"),sep="",collapse=""))
 }
 
