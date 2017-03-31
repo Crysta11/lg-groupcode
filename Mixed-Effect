@@ -89,24 +89,33 @@ for(k in 3:length(directories)){
 
 	for(i in 1:length(genetics)){
 		Gen<-as.matrix(read.csv(paste(c(directories[k],"/",genetics[i]),sep="",collapse=""),header=FALSE))
-		Gen<-Gen[lower.tri(Gen,diag=FALSE)]
-
+		diag(Gen)<-NA
+		Gen<-as.vector(Gen)
+		Gen<-na.omit(Gen)
+		
 		extant.pop<-as.matrix(read.csv(paste(c(directories[2],"/",Extant[i]),sep="",collapse=""),header=FALSE)) 
 
 		#Pop 1 makes a from population
 		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
-		pop1 <- pop1[lower.tri(pop1,diag=FALSE)]
+		diag(pop1)<-NA
+		pop1<-as.vector(pop1)
+		pop1<-na.omit(pop1)	
 		
 		#Pop 2 makes a to population
 		pop2 <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
-		pop2 <- pop2[lower.tri(pop2,diag=FALSE)]
+		diag(pop2)<-NA
+		pop2 <- na.omit(pop2)
 
 		#resample the cost distances for the matrices
 		PopDist1<-PopDist[extant.pop[,1],extant.pop[,1]]
 		PopIBD1<-PopIBD[extant.pop[,1],extant.pop[,1]]
 	
-		PopDist1<-PopDist1[lower.tri(PopDist1,diag=FALSE)]
-		PopIBD1<-PopIBD1[lower.tri(PopIBD1,diag=FALSE)]
+		diag(PopDist1)<-NA
+		PopDist1<-as.vector(PopDist1)
+		PopDist1<-na.omit(PopDist1)
+		diag(PopIBD1)<-NA
+		PopIBD1<-as.vector(PopIBD1)
+		PopIBD1<-na.omit(PopIBD1)
 
 		PopDist1 <- scale(PopDist1)      # Each predictor variable is centred around the mean.
 		PopIBD1<-scale(PopIBD1)	
