@@ -26,7 +26,9 @@ for(j in 1:sum(length(Dirs)-2)){
 #this code generated population sizes for gravity CDPOP input:
 #results$prop.prop <- round((results$prop.landscape/total)*600+10)
 
-	PopSize<-as.matrix(table(DistMat[,1]))
+	unique_pop = unique(DistMat[,1])
+	table_pop = rbind(label=unique_pop, count=sapply(unique_pop,function(x)sum(DistMat[,1]==x)))
+	PopSize<-table_pop[,1]
 	PopSize<-PopSize[,1]
 	habitat<-(PopSize-10)/600
 	habitat1 <- t(matrix(c(habitat),length(habitat),length(habitat)))
