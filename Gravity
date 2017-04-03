@@ -28,8 +28,7 @@ for(j in 1:sum(length(Dirs)-2)){
 
 	unique_pop = unique(DistMat[,1])
 	table_pop = rbind(label=unique_pop, count=sapply(unique_pop,function(x)sum(DistMat[,1]==x)))
-	PopSize<-table_pop[,1]
-	PopSize<-PopSize[,1]
+	PopSize<-table_pop[2,] #extract the counted totals to create the PopSize vector
 	habitat<-(PopSize-10)/600
 	habitat1 <- t(matrix(c(habitat),length(habitat),length(habitat)))
 	
