@@ -1,0 +1,550 @@
+
+rm(list=ls())
+
+require(GeNetIt)
+require(lme4)
+require(MuMIn)
+require(r2glmm)
+require(gtools)
+
+#setwd("/home/jane/LGdata.analysis/")
+directories <-list.files()
+
+
+
+for(k in 1:length(directories)){
+  
+  
+  
+  #setwd(paste(c("/home/jane/LGdata.analysis/",directories[k],"/"),sep="",collapse=""))
+  setwd(paste(c("/Users/Jane/Desktop/Trial1_mc3/",directories[k],"/"),sep="",collapse=""))  
+  wd <- getwd()
+  split <-strsplit(wd,split="_")
+  trial <-split[[1]][3]
+  data <-split[[1]][4] 
+  con <-split[[1]][5]  
+  hab <-split[[1]][6] 
+  
+  
+  #################################################
+  ################################################
+  
+  
+  ##  ALL PREDICTOR VARIABLES ARE THE SAME FOR ALL OF THE GRIDS AND MCRUNS
+  #####  PREDICTOR variables include euclidean distance, cost distance, at-site based distance
+  
+  # 1) Read in the distance matrices for all of the predictor variables
+  
+  # euclidean distance: using the IBD matrices because all of the cells were assigned a value of 1 and therefore cost distance between populations are Euclidean.
+  IBDdist<-as.matrix(read.csv(paste(c("IBRIBDTrial1Cont",con,"Hab",hab,".img.csv"),sep="",collapse=""),header=FALSE))
+  #This subsets the matrix so we get pairwise values per population instead of for individuals
+  SubIBD<-as.matrix(IBDdist[!duplicated(IBDdist),!duplicated(IBDdist)])
+  
+  # resistance distance:  Use the IBR matrices where habitat=1 and non-habitat=10
+  IBRdist <-as.matrix(read.csv(paste(c("IBRcostdistanceTrial1Cont",con,"Hab",hab,".img.csv"),sep="",collapse=""), header=FALSE))
+  #This subsets the matrix so we get pairwise values per population instead of for individuals
+  SubIBR<-as.matrix(IBRdist[!duplicated(IBRdist),!duplicated(IBRdist)])
+  
+  # at-site 'distances': Use the IBE matrices where at-site characteristics are based on proportion of habitat in a window
+  #IBEdist<-as.matrix(read.csv("IBEcostdistanceTrial1Cont0.2Hab0.2.img.csv",header=FALSE))
+  #This subsets the matrix so we get pairwise values per population instead of for individuals--there are duplicates, so subsetting as 1:40 x  1:40 is better
+  #SubIBE<-as.matrix(IBEdist[1:40,1:40])
+  
+  
+  
+  #Create a results data frame
+  results <-data.frame(num=1:200,G=NA,con=NA, hab=NA,data=data, mcrun=3, mod="GLMM", gen=NA, R2m=NA, R2c=NA, R2beta=NA, Delta.AIC=NA, REMLCriterion=NA, RMSE=NA, RMSEn=NA) 
+  
+  cct<-1
+    
+    erun <- "Extantgrid"
+    efile <- mixedsort(list.files(pattern=erun))  
+    frun <- "Fgrid"
+    ffile <- mixedsort(list.files(pattern=frun)) 
+    drun <- "Dgrid"
+    dfile <- mixedsort(list.files(pattern=drun))
+    prun <- "Pgrid"
+    pfile <- mixedsort(list.files(pattern=prun))
+    nrun <- "Ngrid"
+    nfile <- mixedsort(list.files(pattern=nrun))
+  
+    
+    
+    gen <- 1
+    ct <-1
+    
+    for(j in 1:length(efile)){  #This will loop through all the generations
+      
+      ############## DPS
+      
+      #make to and from columns
+      #Use the whole matrix but trim to the extant populations
+      extant.pop <-as.matrix(read.csv(efile[j], header=FALSE))
+      from <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+      lfrom<-from[lower.tri(from, diag=FALSE)]
+      lfrom <-data.frame(From=lfrom)
+      ufrom <-from[upper.tri(from, diag=FALSE)]
+      ufrom <-data.frame(From=ufrom)
+      from <- rbind(lfrom,ufrom)
+      
+      to <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+      lto<-to[lower.tri(to, diag=FALSE)]
+      lto <-data.frame(To=lto)
+      uto <-to[upper.tri(to, diag=FALSE)]
+      uto <-data.frame(To=uto)
+      to <- rbind(lto,uto)
+      
+      #make input data frame
+      inputdf <- data.frame(run=3, To=to, From=from, habitat=NA,IBD=NA, IBR=NA, Dps=NA)  
+      
+      ## Predictor variables 
+      #Trim IBR, IBD, and IBE matrices to the extant populations
+      #Use the whole matrix
+      IBD<-SubIBD[extant.pop[,1],extant.pop[,1]]
+      lIBD <-IBD[lower.tri(IBD,diag=FALSE)]
+      lIBD <-data.frame(IBD=lIBD)
+      uIBD <-IBD[upper.tri(IBD,diag=FALSE)]
+      uIBD <-data.frame(IBD=uIBD)
+      IBD <-rbind(lIBD,uIBD)
+      
+      IBR<-SubIBR[extant.pop[,1],extant.pop[,1]]
+      lIBR <-IBR[lower.tri(IBR,diag=FALSE)]
+      lIBR <-data.frame(IBR=lIBR)
+      uIBR <-IBR[upper.tri(IBR,diag=FALSE)]
+      uIBR <-data.frame(IBR=uIBR)
+      IBR <-rbind(lIBR,uIBR)
+      
+      
+      
+      ## Response variables
+      Dpsmat <- as.matrix(read.csv(dfile[ct],header=FALSE))
+      
+      ## Response variables full matrix
+      lDps<-Dpsmat[lower.tri(Dpsmat, diag=FALSE)]
+      lDps <-data.frame(Dps=lDps)
+      uDps <-Dpsmat[upper.tri(Dpsmat, diag=FALSE)]
+      uDps <-data.frame(Dps=uDps)
+      Dps <- rbind(lDps,uDps)
+      
+      
+      # Each variable is centred around the mean.
+      Dps<-scale(Dps)
+      IBD <-scale(IBD)      
+      IBR<-scale(IBR)	
+      
+      
+      #Put response and predictor variables in to the input data frame
+      inputdf$Dps <- Dps
+      inputdf$IBD <- IBD
+      inputdf$IBR <- IBR
+      
+      #For getting the right generations for the results data frame
+      seq <- seq(from=151,to=641, by=10)
+      
+      
+      #Original suggestion, but end up with colinearity problems
+      #Null<-rep(1,length(inputdf$habitat))
+      
+      #assign each to/from pair a random number for the null matrices currently
+      Null<-sample(1:length(inputdf$habitat), length(inputdf$habitat), replace=F)
+      
+      #scale
+      #Null<-scale(Null)	
+      
+      inputdf$Null <- Null
+      
+      ############################################################################################
+      #Run the models
+      mod_mixed<-gravity(y="Dps",x="IBR",d="IBD",group="From",data=inputdf, ln=FALSE, constrained=TRUE)
+      mod_mixed_null<-gravity(y="Dps", x="Null",d="IBD",group="From", data=inputdf, ln=FALSE, constrained=TRUE)
+      
+      
+      val_mixed<-summary(mod_mixed)
+      RootRsq_mixed<-as.numeric(unlist(regmatches(val_mixed,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed))))
+      
+      val_mixed_null<-summary(mod_mixed_null)
+      RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed_null))))
+      
+      delta.aic.glmm<-mod_mixed$AIC-mod_mixed_null$AIC
+      
+      
+      #Put the data in to the results dataframe
+      results$con[cct] <-con
+      results$hab[cct] <-hab
+      results$G[cct] <-"Dps"
+      results$gen[cct] <- seq[gen]
+      results$mcrun[cct] <-3
+      results$RMSE[cct] <-RootRsq_mixed
+      results$RMSEn[cct] <- RootRsq_mixed_null
+      results$Delta.AIC[cct] <-delta.aic.glmm
+      cct <-cct+1
+      
+      ct <- ct+1
+      gen <- gen + 1
+      
+    }
+    
+    ################# FST
+    gen <- 1
+    ct <-1
+    
+    for(j in 1:length(efile)){  #This will loop through all the generations
+      
+      
+      #make to and from columns
+      #Use the whole matrix but trim to the extant populations
+      extant.pop <-as.matrix(read.csv(efile[j], header=FALSE))
+      from <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+      lfrom<-from[lower.tri(from, diag=FALSE)]
+      lfrom <-data.frame(From=lfrom)
+      ufrom <-from[upper.tri(from, diag=FALSE)]
+      ufrom <-data.frame(From=ufrom)
+      from <- rbind(lfrom,ufrom)
+      
+      to <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+      lto<-to[lower.tri(to, diag=FALSE)]
+      lto <-data.frame(To=lto)
+      uto <-to[upper.tri(to, diag=FALSE)]
+      uto <-data.frame(To=uto)
+      to <- rbind(lto,uto)
+      
+      #make input data frame
+      inputdf <- data.frame(run=3, To=to, From=from, IBD=NA, IBR=NA, habitat=NA, Fst=NA)  
+      
+      ## Predictor variables 
+      #Trim IBR, IBD, and IBE matrices to the extant populations
+      #Use the whole matrix
+      IBD<-SubIBD[extant.pop[,1],extant.pop[,1]]
+      lIBD <-IBD[lower.tri(IBD,diag=FALSE)]
+      lIBD <-data.frame(IBD=lIBD)
+      uIBD <-IBD[upper.tri(IBD,diag=FALSE)]
+      uIBD <-data.frame(IBD=uIBD)
+      IBD <-rbind(lIBD,uIBD)
+      
+      IBR<-SubIBR[extant.pop[,1],extant.pop[,1]]
+      lIBR <-IBR[lower.tri(IBR,diag=FALSE)]
+      lIBR <-data.frame(IBR=lIBR)
+      uIBR <-IBR[upper.tri(IBR,diag=FALSE)]
+      uIBR <-data.frame(IBR=uIBR)
+      IBR <-rbind(lIBR,uIBR)
+      
+      
+      ## Response variables
+      Fstmat <- as.matrix(read.csv(ffile[ct],header=FALSE))
+      
+      ## Response variables full matrix
+      lFst<-Fstmat[lower.tri(Fstmat, diag=FALSE)]
+      lFst <-data.frame(Fst=lFst)
+      uFst <-Fstmat[upper.tri(Fstmat, diag=FALSE)]
+      uFst <-data.frame(Fst=uFst)
+      Fst <- rbind(lFst,uFst)
+      
+      
+      # Each variable is centred around the mean.
+      Fst<-scale(Fst)
+      IBD <-scale(IBD)      
+      IBR<-scale(IBR)	
+      
+      
+      #Put response and predictor variables in to the input data frame
+      inputdf$Fst <- Fst
+      inputdf$IBD <- IBD
+      inputdf$IBR <- IBR
+      
+      #For getting the right generations for the results data frame
+      seq <- seq(from=151,to=641, by=10)
+      
+      
+      
+      #Original suggestion, but end up with colinearity problems
+      #Null<-rep(1,length.out=length(inputdf$habitat))
+      
+      #assign each to/from pair a random number for the null matrices currently
+      Null<-sample(1:length(inputdf$habitat), length(inputdf$habitat), replace=F)
+      
+      #scale
+      Null<-scale(Null)	
+      
+      inputdf$Null <- Null
+      
+      ############################################################################################
+      #Run the models
+      mod_mixed<-gravity(y="Fst",x="IBR",d="IBD",group="From",data=inputdf, ln=FALSE, constrained=TRUE)
+      mod_mixed_null<-gravity(y="Fst", x="Null",d="IBD",group="From", data=inputdf, ln=FALSE, constrained=TRUE)
+      
+      
+      val_mixed<-summary(mod_mixed)
+      RootRsq_mixed<-as.numeric(unlist(regmatches(val_mixed,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed))))
+      
+      val_mixed_null<-summary(mod_mixed_null)
+      RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed_null))))
+      
+      delta.aic.glmm<-mod_mixed$AIC-mod_mixed_null$AIC
+      
+      
+      #Put the data in to the results dataframe
+      results$con[cct] <-con
+      results$hab[cct] <-hab
+      results$G[cct] <-"Fst"
+      results$gen[cct] <- seq[gen]
+      results$mcrun[cct] <-3
+      results$RMSE[cct] <-RootRsq_mixed
+      results$RMSEn[cct] <- RootRsq_mixed_null
+      results$Delta.AIC[cct] <-delta.aic.glmm
+      cct <-cct+1
+      
+      ct <- ct+1
+      gen <- gen + 1
+      
+    }
+    ################# Nei
+    gen <- 1
+    ct <-1
+    
+    for(j in 1:length(efile)){  #This will loop through all the generations
+      
+      
+      #make to and from columns
+      #Use the whole matrix but trim to the extant populations
+      extant.pop <-as.matrix(read.csv(efile[j], header=FALSE))
+      from <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+      lfrom<-from[lower.tri(from, diag=FALSE)]
+      lfrom <-data.frame(From=lfrom)
+      ufrom <-from[upper.tri(from, diag=FALSE)]
+      ufrom <-data.frame(From=ufrom)
+      from <- rbind(lfrom,ufrom)
+      
+      to <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+      lto<-to[lower.tri(to, diag=FALSE)]
+      lto <-data.frame(To=lto)
+      uto <-to[upper.tri(to, diag=FALSE)]
+      uto <-data.frame(To=uto)
+      to <- rbind(lto,uto)
+      
+      #make input data frame
+      inputdf <- data.frame(run=3, To=to, From=from, IBD=NA, IBR=NA, habitat=NA, Nei=NA)  
+      
+      ## Predictor variables 
+      #Trim IBR, IBD, and IBE matrices to the extant populations
+      #Use the whole matrix
+      IBD<-SubIBD[extant.pop[,1],extant.pop[,1]]
+      lIBD <-IBD[lower.tri(IBD,diag=FALSE)]
+      lIBD <-data.frame(IBD=lIBD)
+      uIBD <-IBD[upper.tri(IBD,diag=FALSE)]
+      uIBD <-data.frame(IBD=uIBD)
+      IBD <-rbind(lIBD,uIBD)
+      
+      IBR<-SubIBR[extant.pop[,1],extant.pop[,1]]
+      lIBR <-IBR[lower.tri(IBR,diag=FALSE)]
+      lIBR <-data.frame(IBR=lIBR)
+      uIBR <-IBR[upper.tri(IBR,diag=FALSE)]
+      uIBR <-data.frame(IBR=uIBR)
+      IBR <-rbind(lIBR,uIBR)
+      
+      
+      
+      ## Response variables
+      Neimat <- as.matrix(read.csv(nfile[ct],header=FALSE))
+      
+      ## Response variables full matrix
+      lNei<-Neimat[lower.tri(Neimat, diag=FALSE)]
+      lNei <-data.frame(Nei=lNei)
+      uNei <-Neimat[upper.tri(Neimat, diag=FALSE)]
+      uNei <-data.frame(Nei=uNei)
+      Nei <- rbind(lNei,uNei)
+      
+      
+      # Each variable is centred around the mean.
+      Nei<-scale(Nei)
+      IBD <-scale(IBD)      
+      IBR<-scale(IBR)	
+      
+      
+      #Put response and predictor variables in to the input data frame
+      inputdf$Nei <- Nei
+      inputdf$IBD <- IBD
+      inputdf$IBR <- IBR
+      
+      #For getting the right generations for the results data frame
+      seq <- seq(from=151,to=641, by=10)
+      
+      
+      #Original suggestion, but end up with colinearity problems
+      #Null<-rep(1,length.out=length(inputdf$habitat))
+      
+      #assign each to/from pair a random number for the null matrices currently
+      Null<-sample(1:length(inputdf$habitat), length(inputdf$habitat), replace=F)
+      
+      #scale
+      Null<-scale(Null)	
+      
+      inputdf$Null <- Null
+      
+      ############################################################################################
+      #Run the models
+      mod_C<-gravity(y="Nei",x=c("IBR"),d="IBD",group="From",data=inputdf,ln=TRUE,constrained=TRUE)
+      
+      mod_NULL<-gravity(y="Nei",x="Null",d="IBD",group="From",data=inputdf,ln=TRUE,constrained=TRUE)
+      
+      
+      ###############################################################################################
+      #Extract the RMSE value from the model... since it's in astring, need to cut it from the string
+      
+      mod_mixed<-gravity(y="Nei",x="IBR",d="IBD",group="From",data=inputdf, ln=FALSE, constrained=TRUE)
+      mod_mixed_null<-gravity(y="Nei", x="Null",d="IBD",group="From", data=inputdf, ln=FALSE, constrained=TRUE)
+      
+      
+      val_mixed<-summary(mod_mixed)
+      RootRsq_mixed<-as.numeric(unlist(regmatches(val_mixed,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed))))
+      
+      val_mixed_null<-summary(mod_mixed_null)
+      RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed_null))))
+      
+      delta.aic.glmm<-mod_mixed$AIC-mod_mixed_null$AIC
+      
+      
+      #Put the data in to the results dataframe
+      results$con[cct] <-con
+      results$hab[cct] <-hab
+      results$G[cct] <-"Nei"
+      results$gen[cct] <- seq[gen]
+      results$mcrun[cct] <-3
+      results$RMSE[cct] <-RootRsq_mixed
+      results$RMSEn[cct] <- RootRsq_mixed_null
+      results$Delta.AIC[cct] <-delta.aic.glmm
+      cct <-cct+1
+      
+      ct <- ct+1
+      gen <- gen + 1
+      
+    }
+    ################# PCA
+    gen <- 1
+    ct <-1
+    
+    for(j in 1:length(efile)){  #This will loop through all the generations
+      
+      
+      #make to and from columns
+      #Use the whole matrix but trim to the extant populations
+      extant.pop <-as.matrix(read.csv(efile[j], header=FALSE))
+      from <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+      lfrom<-from[lower.tri(from, diag=FALSE)]
+      lfrom <-data.frame(From=lfrom)
+      ufrom <-from[upper.tri(from, diag=FALSE)]
+      ufrom <-data.frame(From=ufrom)
+      from <- rbind(lfrom,ufrom)
+      
+      to <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+      lto<-to[lower.tri(to, diag=FALSE)]
+      lto <-data.frame(To=lto)
+      uto <-to[upper.tri(to, diag=FALSE)]
+      uto <-data.frame(To=uto)
+      to <- rbind(lto,uto)
+      
+      #make input data frame
+      inputdf <- data.frame(run=3, To=to, From=from, IBD=NA, IBR=NA, habitat=NA, PCA=NA)  
+      
+      ## Predictor variables 
+      #Trim IBR, IBD, and IBE matrices to the extant populations
+      #Use the whole matrix
+      IBD<-SubIBD[extant.pop[,1],extant.pop[,1]]
+      lIBD <-IBD[lower.tri(IBD,diag=FALSE)]
+      lIBD <-data.frame(IBD=lIBD)
+      uIBD <-IBD[upper.tri(IBD,diag=FALSE)]
+      uIBD <-data.frame(IBD=uIBD)
+      IBD <-rbind(lIBD,uIBD)
+      
+      IBR<-SubIBR[extant.pop[,1],extant.pop[,1]]
+      lIBR <-IBR[lower.tri(IBR,diag=FALSE)]
+      lIBR <-data.frame(IBR=lIBR)
+      uIBR <-IBR[upper.tri(IBR,diag=FALSE)]
+      uIBR <-data.frame(IBR=uIBR)
+      IBR <-rbind(lIBR,uIBR)
+      
+      
+      ## Response variables
+      PCAmat <- as.matrix(read.csv(pfile[ct],header=FALSE))
+      
+      ## Response variables full matrix
+      lPCA<-PCAmat[lower.tri(PCAmat, diag=FALSE)]
+      lPCA <-data.frame(PCA=lPCA)
+      uPCA <-PCAmat[upper.tri(PCAmat, diag=FALSE)]
+      uPCA <-data.frame(PCA=uPCA)
+      PCA <- rbind(lPCA,uPCA)
+      
+      
+      # Each variable is centred around the mean.
+      PCA<-scale(PCA)
+      IBD <-scale(IBD)      
+      IBR<-scale(IBR)	
+      
+      
+      #Put response and predictor variables in to the input data frame
+      inputdf$PCA <- PCA
+      inputdf$IBD <- IBD
+      inputdf$IBR <- IBR
+      
+      #For getting the right generations for the results data frame
+      seq <- seq(from=151,to=641, by=10)
+      
+      
+      #Original suggestion, but end up with colinearity problems
+      #Null<-rep(1,length.out=length(inputdf$habitat))
+      
+      #assign each to/from pair a random number for the null matrices currently
+      Null<-sample(1:length(inputdf$habitat), length(inputdf$habitat), replace=F)
+      
+      #scale
+      Null<-scale(Null)	
+      
+      inputdf$Null <- Null
+      
+      ############################################################################################
+      #Run the models
+      mod_mixed<-gravity(y="PCA",x="IBR",d="IBD",group="From",data=inputdf, ln=FALSE, constrained=TRUE)
+      mod_mixed_null<-gravity(y="PCA", x="Null",d="IBD",group="From", data=inputdf, ln=FALSE, constrained=TRUE)
+      
+      
+      val_mixed<-summary(mod_mixed)
+      RootRsq_mixed<-as.numeric(unlist(regmatches(val_mixed,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed))))
+      
+      val_mixed_null<-summary(mod_mixed_null)
+      RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed_null))))
+      
+      delta.aic.glmm<-mod_mixed$AIC-mod_mixed_null$AIC
+      
+      
+      #Put the data in to the results dataframe
+      results$con[cct] <-con
+      results$hab[cct] <-hab
+      results$G[cct] <-"PCA"
+      results$gen[cct] <- seq[gen]
+      results$mcrun[cct] <-3
+      results$RMSE[cct] <-RootRsq_mixed
+      results$RMSEn[cct] <- RootRsq_mixed_null
+      results$Delta.AIC[cct] <-delta.aic.glmm
+      cct <-cct+1
+      
+      ct <- ct+1
+      gen <- gen + 1
+      
+    }
+    write.csv(results, file=paste(c("/Users/Jane/Desktop/output/Trial_1_mc3_GLMM/",trial,"_con",con,"_hab",hab,"_mod_GLMM_dat_", data,".csv"),sep="",collapse=""))  
+    #write.csv(results, file=paste(c("/home/jane/LG_output/Trial12_data/Trial12_","con",con,"hab",hab,"_modGLMM_dat", data,".csv"),sep="",collapse=""))  
+  }
+  
+ 
+  
+   
+
+
+
+
+
+
+
+
+
+
+
