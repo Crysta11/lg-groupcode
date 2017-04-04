@@ -1,0 +1,322 @@
+library(PopGenReport)
+library(gtools)
+library(GeNetIt)
+
+rm(list=ls())
+
+##Code adapted from LDG-2016 course week 7 supplementary materials
+
+#----------------------------File Management--------------------------#
+
+##Directory where all the genetics are.  File management is as follows:
+#First folder within the genetics folder contains IBE distance matrices, folder named "1_Cost"
+#There are duplicate cost files equal to the number of MC runs being analyzed
+#Rest of the folders are folders of Genetic output for each MC run
+#Within each MC run folders, there are folders for "Extant" and genetic distances.
+#The Extant files should be relabeled to "1_Extant" so it won't interfere with the for-loop later
+#Output files will be written to MC run folders.
+
+
+
+#setwd("/home/jane/LGdata.analysis/")
+directories <-list.files()
+
+
+####Lists all of the directories so we can loop through all contagion, habitat, and data types
+for(k in 1:length(directories)){
+  
+  
+  
+  #setwd(paste(c("/home/jane/LGdata.analysis/",directories[k],"/"),sep="",collapse=""))
+  setwd(paste(c("/Users/Jane/Desktop/Trial1_mc3/",directories[k],"/"),sep="",collapse=""))  
+  wd <- getwd()
+  split <-strsplit(wd,split="_")
+  trial <-split[[1]][3]
+  data <-split[[1]][4] 
+  con <-split[[1]][5]  
+  hab <-split[[1]][6]  
+  
+
+  ##  ALL PREDICTOR VARIABLES ARE THE SAME FOR ALL OF THE GRIDS AND MCRUNS
+  #####  PREDICTOR variables include euclidean distance, cost distance, at-site based distance
+  
+  # Read in the distance matrices for all of the predictor variables.  Some are commented out depending on model requirements.  
+  
+  # euclidean distance: using the IBD matrices because all of the cells were assigned a value of 1 and therefore cost distance between populations are Euclidean.
+  #IBDdist<-as.matrix(read.csv(paste(c("IBRIBDTrial1Cont",con,"Hab",hab,".img.csv"),sep="",collapse=""),header=FALSE))
+  #This subsets the matrix so we get pairwise values per population instead of for individuals
+  #SubIBD<-as.matrix(IBDdist[!duplicated(IBDdist),!duplicated(IBDdist)])
+  
+  # resistance distance:  Use the IBR matrices where habitat=1 and non-habitat=10
+  #IBRdist <-as.matrix(read.csv(paste(c("IBRcostdistanceTrial1Cont",con,"Hab",hab,".img.csv"),sep="",collapse=""), header=FALSE))
+  #This subsets the matrix so we get pairwise values per population instead of for individuals
+  #SubIBR<-as.matrix(IBRdist[!duplicated(IBRdist),!duplicated(IBRdist)])
+  
+  # at-site 'distances': Use the IBE matrices where at-site characteristics are based on proportion of habitat in a window
+  IBEdist<-as.matrix(read.csv(paste(c("IBEcostdistanceTrial1Cont",con,"Hab",hab,".img.csv"),sep="",collapse=""), header=FALSE))
+  #This subsets the matrix so we get pairwise values per population instead of for individuals--there are duplicates, so subsetting as 1:40 x  1:40 is better
+  SubIBE<-as.matrix(IBEdist[1:40,1:40])
+  
+  results <-data.frame(num=1:200,G=NA,con=NA, hab=NA,data=NA, mcrun=NA, mod=NA, gen=NA, AIC=NA, adjRsq=NA,Intcoef=NA,X1coef=NA,Inttstat=NA,X1tstat=NA,Inttpvalue=NA,Inttpvalue=NA,X1tpvalue=NA,Fstat=NA,Fpvalue=NA,r2=NA)
+
+  cct <- 1
+
+    
+    erun <- "Extantgrid"
+    efile <- mixedsort(list.files(pattern=erun))  
+    frun <- "Fgrid"
+    ffile <- mixedsort(list.files(pattern=frun)) 
+    drun <- "Dgrid"
+    dfile <- mixedsort(list.files(pattern=drun))
+    prun <- "Pgrid"
+    pfile <- mixedsort(list.files(pattern=prun))
+    nrun <- "Ngrid"
+    nfile <- mixedsort(list.files(pattern=nrun))
+    
+    
+    gen <- 1
+    ct <-1
+  
+  
+    
+    for(j in 1:length(efile)){  #This will loop through all the generations
+
+      #Get the remaining populations to use to clip the predictor variable matrix
+      extant.pop <-as.matrix(read.csv(efile[j], header=FALSE))
+      
+      ############  DPS
+
+      ## Predictor variables 
+      #Trim IBR, IBD, and IBE matrices to the extant populations
+      IBE<-SubIBE[extant.pop[,1],extant.pop[,1]]
+
+  
+      # Response variables
+      Dpsmat <- as.matrix(read.csv(dfile[ct],header=FALSE))
+      
+      
+      #Scale the data
+      IBE <- scale(IBE)
+      Dps<-scale(Dpsmat)
+      
+      
+      # IBE needs to be a list apparently
+      IBE <-list(IBE)
+      
+      #The IBE model
+      a<-lgrMMRR(gen.mat = Dps, cost.mats = IBE,eucl.mat= NULL, nperm = 999)
+      
+      
+      #Make variable for generation
+      seq <- seq(from=151,to=641, by=10)
+      
+      #Put data in to the results data frame
+      results$Intcoef[cct] <- a$mmrr.tab[[2]][1]
+      results$X1coef[cct] <- a$mmrr.tab[[2]][2]
+      results$Inttstat[cct] <- a$mmrr.tab[[3]][1]
+      results$X1tstat[cct] <- a$mmrr.tab[[3]][2]
+      results$Inttpvalue[cct] <- a$mmrr.tab[[4]][1]
+      results$X1tpvalue[cct] <- a$mmrr.tab[[4]][2]
+      results$Fstat[cct] <- a$mmrr.tab[[5]][1]
+      results$Fpvalue[cct] <- a$mmrr.tab[[6]][1]
+      results$r2[cct] <- a$mmrr.tab[[7]][1]
+      results$con[cct] <-con
+      results$hab[cct] <-hab
+      results$mcrun[cct] <-3
+      results$data[cct] <- data
+      results$G[cct] <- "Dps"
+      results$gen[cct] <-seq[gen]
+      results$mod[cct] <-"IBE"
+      cct <-cct + 1
+      gen <- gen+1  
+      ct <- ct +1
+      print("Dps")
+    }
+
+    
+    gen <- 1
+    ct <-1
+    
+    
+    
+    for(j in 1:length(efile)){  #This will loop through all the generations
+      
+      #Get the remaining populations to use to clip the predictor variable matrix
+      extant.pop <-as.matrix(read.csv(efile[j], header=FALSE))
+      
+      ############  Fst
+      
+      ## Predictor variables 
+      #Trim IBR, IBD, and IBE matrices to the extant populations
+      IBE<-SubIBE[extant.pop[,1],extant.pop[,1]]
+      
+      
+      # Response variables
+      Fstmat <- as.matrix(read.csv(ffile[ct],header=FALSE))
+      
+      
+      #Scale the data
+      IBE <- scale(IBE)
+      Fst<-scale(Fstmat)
+      
+      
+      # IBE needs to be a list apparently
+      IBE <-list(IBE)
+      
+      #The IBE model
+      a<-lgrMMRR(gen.mat = Fst, cost.mats = IBE,eucl.mat= NULL, nperm = 999)
+      
+      
+      #Make variable for generation
+      seq <- seq(from=151,to=641, by=10)
+
+      #Put data in to the results data frame
+      results$Intcoef[cct] <- a$mmrr.tab[[2]][1]
+      results$X1coef[cct] <- a$mmrr.tab[[2]][2]
+      results$Inttstat[cct] <- a$mmrr.tab[[3]][1]
+      results$X1tstat[cct] <- a$mmrr.tab[[3]][2]
+      results$Inttpvalue[cct] <- a$mmrr.tab[[4]][1]
+      results$X1tpvalue[cct] <- a$mmrr.tab[[4]][2]
+      results$Fstat[cct] <- a$mmrr.tab[[5]][1]
+      results$Fpvalue[cct] <- a$mmrr.tab[[6]][1]
+      results$r2[cct] <- a$mmrr.tab[[7]][1]
+      results$con[cct] <-con
+      results$hab[cct] <-hab
+      results$mcrun[cct] <-3
+      results$data[cct] <- data
+      results$G[cct] <- "Fst"
+      results$gen[cct] <-seq[gen]
+      results$mod[cct] <-"IBE"
+      cct <-cct + 1
+      gen <- gen+1  
+      ct <- ct +1
+      print("Fst")
+    }
+    
+    
+    gen <- 1
+    ct <-1
+    
+    
+    
+    for(j in 1:length(efile)){  #This will loop through all the generations
+      
+      #Get the remaining populations to use to clip the predictor variable matrix
+      extant.pop <-as.matrix(read.csv(efile[j], header=FALSE))
+      
+      ############  Nei
+      
+      ## Predictor variables 
+      #Trim IBR, IBD, and IBE matrices to the extant populations
+      IBE<-SubIBE[extant.pop[,1],extant.pop[,1]]
+      
+      
+      # Response variables
+      Neimat <- as.matrix(read.csv(nfile[ct],header=FALSE))
+      
+      
+      #Scale the data
+      IBE <- scale(IBE)
+      Nei<-scale(Neimat)
+      
+      
+      # IBE needs to be a list apparently
+      IBE <-list(IBE)
+      
+      #The IBE model
+      a<-lgrMMRR(gen.mat = Nei, cost.mats = IBE,eucl.mat= NULL, nperm = 999)
+      
+      
+      #Make variable for generation
+      seq <- seq(from=151,to=641, by=10)
+      
+      #Put data in to the results data frame
+      results$Intcoef[cct] <- a$mmrr.tab[[2]][1]
+      results$X1coef[cct] <- a$mmrr.tab[[2]][2]
+      results$Inttstat[cct] <- a$mmrr.tab[[3]][1]
+      results$X1tstat[cct] <- a$mmrr.tab[[3]][2]
+      results$Inttpvalue[cct] <- a$mmrr.tab[[4]][1]
+      results$X1tpvalue[cct] <- a$mmrr.tab[[4]][2]
+      results$Fstat[cct] <- a$mmrr.tab[[5]][1]
+      results$Fpvalue[cct] <- a$mmrr.tab[[6]][1]
+      results$r2[cct] <- a$mmrr.tab[[7]][1]
+      results$con[cct] <-con
+      results$hab[cct] <-hab
+      results$mcrun[cct] <-3
+      results$data[cct] <- data
+      results$G[cct] <- "Nei"
+      results$gen[cct] <-seq[gen]
+      results$mod[cct] <-"IBE"
+      cct <-cct + 1
+      gen <- gen+1  
+      ct <- ct +1
+      print("Nei")
+    }
+    
+    
+    gen <- 1
+    ct <-1
+    
+    
+    
+    for(j in 1:length(efile)){  #This will loop through all the generations
+      
+      #Get the remaining populations to use to clip the predictor variable matrix
+      extant.pop <-as.matrix(read.csv(efile[j], header=FALSE))
+      
+      ############  PCA
+      
+      ## Predictor variables 
+      #Trim IBR, IBD, and IBE matrices to the extant populations
+      IBE<-SubIBE[extant.pop[,1],extant.pop[,1]]
+      
+      
+      # Response variables
+      PCAmat <- as.matrix(read.csv(pfile[ct],header=FALSE))
+      
+      
+      #Scale the data
+      IBE <- scale(IBE)
+      PCA<-scale(PCAmat)
+      
+      
+      # IBE needs to be a list apparently
+      IBE <-list(IBE)
+      
+      #The IBE model
+      a<-lgrMMRR(gen.mat = PCA, cost.mats = IBE,eucl.mat= NULL, nperm = 999)
+      
+      
+      #Make variable for generation
+      seq <- seq(from=151,to=641, by=10)
+      
+      #Put data in to the results data frame
+      results$Intcoef[cct] <- a$mmrr.tab[[2]][1]
+      results$X1coef[cct] <- a$mmrr.tab[[2]][2]
+      results$Inttstat[cct] <- a$mmrr.tab[[3]][1]
+      results$X1tstat[cct] <- a$mmrr.tab[[3]][2]
+      results$Inttpvalue[cct] <- a$mmrr.tab[[4]][1]
+      results$X1tpvalue[cct] <- a$mmrr.tab[[4]][2]
+      results$Fstat[cct] <- a$mmrr.tab[[5]][1]
+      results$Fpvalue[cct] <- a$mmrr.tab[[6]][1]
+      results$r2[cct] <- a$mmrr.tab[[7]][1]
+      results$con[cct] <-con
+      results$hab[cct] <-hab
+      results$mcrun[cct] <-3
+      results$data[cct] <- data
+      results$G[cct] <- "PCA"
+      results$gen[cct] <-seq[gen]
+      results$mod[cct] <-"IBE"
+      cct <-cct + 1
+      gen <- gen+1  
+      ct <- ct +1
+      print("PCA")
+    }
+     
+  
+  #write.csv(results, file=paste(c("/home/jane/LG_output/Trial12_data/","_",trial,"_con",con,"_hab",hab,"_modIBE_dat", data,".csv"),sep="",collapse=""))   
+  write.csv(results, file=paste(c("/Users/Jane/Desktop/output/Trial_1_mc3_IBE_999_noME/","_",trial,"_","_con",con,"_hab",hab,"_mod_IBE_dat_", data,".csv"),sep="",collapse=""))  
+  
+  
+  
+}
