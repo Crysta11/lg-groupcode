@@ -100,7 +100,8 @@ CDPOP<-mixedsort(list.files())
 
 for(i in 1:length(CDPOP)){
 
-ADat<-read.csv(CDPOP[i])
+#only read in csv files, ignoring the genind output from CDPOP
+ADat<-mixedsort(list.files(pattern="*.csv", full.names=FALSE))
 
 ##strataG can calculate Nei's DA
 
