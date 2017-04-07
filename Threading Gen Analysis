@@ -139,7 +139,7 @@ NDAGenG<-neiDa(GenG)
 
 SurvivingPops<-unique(GenG@strata)
 write.table(M,file = paste(c(getwd(),"/Nei/","N",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
-write.table(SurvivingPops,file = paste(c(getwd(),"1_Extant/","Extant",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(SurvivingPops,file = paste(c(getwd(),"/1_Extant/","Extant",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
 
 
 ###############################
