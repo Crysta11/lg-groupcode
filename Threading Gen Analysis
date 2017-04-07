@@ -75,6 +75,9 @@ cl<-makeCluster(8) #select #of processors you have detectCluster() will provide 
 
 foreach(z=1:length(directories)) %dopar% {
 
+#If the parallel isn't running, do a for-loop
+#for(z in 1:length(directories)){
+
 #create folders for extant population and genetic output
 
 dir.create(paste(c(getwd(),"/",directories[z],"/1_Extant"),sep="",collapse=''))
@@ -90,6 +93,7 @@ setwd(paste(c("C:\\Users\\Nathan\\Desktop\\Trial1Gravity\\1Gravity0.2_0.2-.8\\1_
 
 ###list all of the "grid.csv" files wanted for analysis
 CDPOP<-list.files()
+#CDPOP<-CDPOP[1:27]
 
 ###For each "grid.csv" file, calculate desired genetic distnace matrix
 
