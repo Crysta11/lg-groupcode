@@ -1,0 +1,351 @@
+install.packages("SDMTools")
+require(secr)
+require(gdistance)
+require(raster)
+require(sp)
+require(PopGenReport)
+require(gstudio)
+require(rgeos)
+library(SDMTools)
+library(foreach)
+library(doParallel)
+
+setwd(choose.dir())
+
+#Maps<-list.files(pattern=".img")##list all files in the raster directory
+
+Maps<-list.files()
+length(Maps)
+
+
+##NA EDIT##
+MapOnly<-Maps[c(TRUE, FALSE)]
+length(MapOnly)
+
+
+
+##Create Population Function-From LDG homework code
+
+createpops <- function(n, mindist, landscape)
+{  
+  
+  minx <- extent(landscape)@xmin #get the min and max  coordinates
+  miny <- extent(landscape)@ymin #coordinates of the landscape
+  maxx <- extent(landscape)@xmax
+  maxy <- extent(landscape)@ymax
+  
+  cc<- 1
+  coords <- data.frame(lx=NA, ly=NA)
+  while (cc<= n )  #repeat until you have found n locations
+  {
+    draw=FALSE
+    while (draw==FALSE)
+    {
+      x <- runif(1,minx,maxx)
+      y <- runif(1,miny,maxy)
+      if (landscape[cellFromXY(landscape,c(x,y) )]==0)  draw=TRUE #check if in the habitat
+    }
+    
+    coords[cc,] <- c(x,y)
+    
+    if (nrow(coords)>1) d <- min(dist(coords)) else d <- mindist+1 
+    
+    if (d > mindist) cc <- cc+1  #take the location only if distance is larger than mindist
+  }
+  return( as.matrix( coords))
+}
+
+
+
+###################Computation intensive############
+## for-loop to calculate distance matrices
+
+
+##number of processors##
+
+cl<-makeCluster(8) #select #of processors you have detectCluster() will provide the number
+
+foreach(z=1:length(MapOnly)) %dopar% {
+  r <- raster(MapOnly[z])
+
+#Trial run before for-loop
+
+
+  #Define Metapopulation.  Again this is from the Wk8 lab.
+  
+  para<- list()
+  #Define populations (dynamics)
+  para$n.pops=40 # set the number of unique locations for the populations
+  para$n.ind=25 # set the number of individuals per population
+  
+  
+  #Define cost distance method
+  para$method <- "commute" #commute is akin to Circuit-based analysis (Fouss et al. 2006)
+  para$NN <- 8  #number of neighbours for the cost distance method ### I think this is direction moveable through cells-I set it to 8
+  
+  
+  #Define x and y locations
+  para$locs <-createpops(n=para$n.pops, mindist = 3, landscape = r)
+
+
+  bw=16*30 #16 cells, each of 30m; may want to only do 8?
+
+
+ ##########################
+  
+  ##Read in map files##
+  
+  mraster <- r #read in R before converting to 1 and 10
+
+  ##read in CDPOP input file,will subset into only coordinates##
+  
+  uxy<-data.frame(para$locs)
+  
+  
+  ##create a null data frame
+  
+  results <- as.data.frame(array(NA, dim=c( 40, 38 )))
+  
+  ##for loop to fill in data frame with FRAGSTAT output
+  ##since some pops have no non-habitat, need to omit NULL outputs
+  
+  for(j in 1:length(uxy[,1])) {
+    lsub <- uxy[j,]
+    f <- extract(mraster, lsub, buffer=bw, na.rm=FALSE, cellnumbers=TRUE)
+    x <- rasterFromCells(mraster, f[[1]][,1], values=TRUE)
+    cr <- crop(mraster, x)
+    LM <- ClassStat(cr,cellsize=30, bkgd=1) #background values are 1
+    
+    if (!is.null(LM)) { 
+      results[j,]<-LM
+      
+    }
+    
+  }
+
+  ##Change the column names
+  colnames(results)<-c("class","n.patches","total.area","prop.landscape","patch.density","total.edge","edge.density","landscape.shape.index",
+		"largest.patch.index","mean.patch.area","sd.patch.area","min.patch.area","max.patch.area","perimeter.area.frac.dim","mean.perim.area.ratio",
+	"sd.perim.area.ratio","min.perim.area.ratio","max.perim.area.ratio","mean.shape.index","sd.shape.index","min.shape.index","max.shape.index",
+	"mean.frac.dim.index","sd.frac.dim.index","min.frac.dim.index","max.frac.dim.index","total.core.area","prop.landscape.core","mean.patch.core.area",
+	"sd.patch.core.area","min.patch.core.area","max.patch.core.area","prop.like.adjacencies","aggregation.index","lanscape.division.index",
+	"splitting.index","effective.mesh.size","patch.cohesion.index")
+ 
+  #Change NA values to 1 for prop.landscape
+  results$prop.landscape[is.na(results$prop.landscape)] <- 1
+  
+  #Sum the values in results$prop.landscape
+  total <- sum(results$prop.landscape)
+  
+  results$prop.prop <- round((results$prop.landscape/total)*400+15)
+  
+
+  ###Convex hull used to limit the processing speed.  with less populations, may
+  ### want to change this.  Circuitscape analyses require all landscapes, and this may 
+  ### limit the total connectivity between points, and may limit costs for edge populations
+  ###disproportionately than central populations
+  
+  #Create convex hull
+  
+  
+  conhull <- SpatialPoints(para$locs)
+  hull <- gConvexHull(conhull)
+  
+  hullbuffer <- gBuffer(hull, width=10000)
+  landscape<-crop(r,hullbuffer)
+  
+  poptotal <- sum(results$prop.prop)
+  ##create a dataset that with "initial" with length of # of total individuals
+  
+  initial<-NA
+  for(j in 1:(poptotal)){
+    init<-paste(c("initial",j),sep="",collapse="")
+    initial<-na.omit(rbind(initial,init))
+  } 
+  
+ 
+
+  
+
+  
+  #Create an individual matrix for a gravity model influenced CDPOP run
+  ctr <- 1
+  pops <-c()
+  
+
+  for(n in results$prop.prop){
+    idx <- rep(ctr,n)
+    pops <- c(pops, idx)
+    ctr <- ctr + 1
+  }
+
+
+
+  #Create yet another dataframe
+  pops <-as.data.frame(pops)
+  location <-as.data.frame(para$locs)
+  location$pops <-c(1:40)
+  results$pops <- c(1:40)
+  GravModel <-merge(pops, location, by=intersect(names(pops),names(pops)))
+
+
+#######################
+###Grav CDPOP input####
+#######################
+
+  ##crate a dataset with all the CDPOP inputs.  Assign individuals to subpopulations, xy coordinates, a unique ID, equal sex assignment prob,
+  ##and fitness of alleles.  AA is set to 50, Aa is set from 1-1000 (based on trial data, this may need to be set differently), and 100.
+  #create a list that assigns population identification to individuals
+  #assign XY coordinates to individuals
+  #assign uniqu IDs for individuals
+  #assign sex to F or M randomly
+  #assign allele fitness frequencies
+   GravIndividuals<-data.frame(GravModel$pops,GravModel$lx,GravModel$ly,initial[,1],sample(c(0,1),poptotal,replace=TRUE),0,0,0,0,0,0,0,0,0,0,0,0) 
+  
+  colnames(GravIndividuals)<-c("Subpopulation","lx","ly","ID","sex","Fitness_AA","Fitness_Aa","Fitness_aa","Fitness_AABB",
+                           "Fitness_AaBB","Fitness_aaBB","Fitness_AABb","Fitness_AaBb","Fitness_aaBb","Fitness_AAbb","Fitness_Aabb","Fitness_aabb")
+  
+  
+
+
+#####################
+##Grav IBR###########
+#####################
+  
+  #create a costdistance matrix for individuals from subpopulation distances
+  
+  ##set non-habitat to friction values of 10, and habitat to 1 for Circuit based-analyses
+  
+  values(r)[(values(r))==1]<-10
+  values(r)[(values(r))==0]<-1
+  # A)    init simulation populations from scratch
+  
+  landscape<- r  #<-raster(system.file("external/rlogo.grd", package="raster"))
+  
+  cost.mat <- costdistances(landscape, para$locs, para$method, para$NN) #needed for the simulation
+  
+  model<-cost.mat
+
+  GravInd<-matrix(NA,ncol=length(GravIndividuals$Subpopulation),nrow=length(GravIndividuals$Subpopulation)) ##Create a null matrix of length of individuals
+  for(i in 1:length(GravIndividuals$Subpopulation)){
+    
+    for(j in 1:length(GravIndividuals$Subpopulation)){
+      
+      GravInd[i,j]<-model[GravIndividuals[i,1],GravIndividuals[j,1]]
+    }
+  }
+
+
+ ##########################
+ ###GRAV IBD CALCULATION###
+ ##########################
+  
+  Grav.IBD<-landscape
+  values(Grav.IBD)<-1
+  
+  IBD.mat <- costdistances(Grav.IBD, para$locs, para$method, para$NN) #needed for the simulation
+  
+  #Define x and y locations
+  model<-IBD.mat
+  
+  GravIBD.ind<-matrix(NA,ncol=length(GravIndividuals$Subpopulation),nrow=length(GravIndividuals$Subpopulation)) ##Create a null matrix of length of individuals
+  for(i in 1:length(GravIndividuals$Subpopulation)){
+    
+    for(j in 1:length(GravIndividuals$Subpopulation)){
+      
+      GravIBD.ind[i,j]<-model[GravIndividuals[i,1],GravIndividuals[j,1]]
+    }
+  }
+ 
+#####################################################
+#################Non Gravity Model###################
+#####################################################
+
+ initial<-NA
+  for(j in 1:(para$n.pops*para$n.ind)){
+    init<-paste(c("initial",j),sep="",collapse="")
+    initial<-na.omit(rbind(initial,init))
+  } 
+  
+  Individuals<-data.frame(1:para$n.pops, #create a list that assigns population identification to individuals
+						 rep(para$locs[,1],para$n.ind),rep(para$locs[,2],para$n.ind), #assign XY coordinates to individuals
+						 initial[,1], #assign uniqu IDs for individuals
+             sample(c(0,1),para$n.pops*para$n.ind,replace=TRUE),#assign sex to F or M randomly
+						 0,0,0,0,0,0,0,0,0,0,0,0) #assign allele fitness frequencies
+  
+  colnames(Individuals)<-c("Subpopulation","lx","ly","ID","sex","Fitness_AA","Fitness_Aa","Fitness_aa","Fitness_AABB",
+                           "Fitness_AaBB","Fitness_aaBB","Fitness_AABb","Fitness_AaBb","Fitness_aaBb","Fitness_AAbb","Fitness_Aabb","Fitness_aabb")
+  
+  
+  model<-cost.mat
+  
+  Ind<-matrix(NA,ncol=length(Individuals$Subpopulation),nrow=length(Individuals$Subpopulation)) ##Create a null matrix of length of individuals
+  for(i in 1:length(Individuals$Subpopulation)){
+    
+    for(j in 1:length(Individuals$Subpopulation)){
+      
+      Ind[i,j]<-model[Individuals[i,1],Individuals[j,1]]
+    }
+  }
+
+  #####################
+  ###IBD CALCULATION###
+  #####################
+    
+  #Define x and y locations
+  model<-IBD.mat
+  
+  IBD.ind<-matrix(NA,ncol=length(Individuals$Subpopulation),nrow=length(Individuals$Subpopulation)) ##Create a null matrix of length of individuals
+  for(i in 1:length(Individuals$Subpopulation)){
+    
+    for(j in 1:length(Individuals$Subpopulation)){
+      
+      IBD.ind[i,j]<-model[Individuals[i,1],Individuals[j,1]]
+    }
+  }
+
+
+#########################
+#####IBE CALCULATIONS####
+#########################
+
+IBE.site<-matrix(NA, ncol=para$n.pops,nrow=para$n.pops)
+for(x in 1:para$n.pops){
+	for(w in 1:para$n.pops){
+
+	IBE.site[x,w]<-abs(results$prop.landscape[x]-results$prop.landscape[w])
+
+	}
+  }
+
+IBE.ind<-matrix(NA,ncol=length(Individuals$Subpopulation),nrow=length(Individuals$Subpopulation)) ##Create a null matrix of length of individuals
+ 
+model<-IBE.site
+ for(i in 1:length(Individuals$Subpopulation)){
+    
+    for(j in 1:length(Individuals$Subpopulation)){
+      
+      IBE.ind[i,j]<-model[Individuals[i,1],Individuals[j,1]]
+    }
+  }
+
+
+IBE.null<-matrix(.5,ncol=1000,nrow=1000)
+diag(IBE.null)<-0
+
+
+  #Create a .table file that can be used by CDPOP  
+  #Write.table allows you to eliminate column names whereas write.csv does not
+  write.table(Ind, file =paste(c("IBRcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBD.ind, file =paste(c("IBRIBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(Individuals, file =paste(c("XY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=TRUE, sep=",")
+  write.table(GravInd, file =paste(c("Gravcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIBD.ind, file =paste(c("GravIBD",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(GravIndividuals, file =paste(c("GravXY",MapOnly[z],".csv"),sep="",collapse=""), row.names = FALSE, na="",col.names=TRUE, sep=",")
+  write.table(IBE.ind, file =paste(c("IBEcostdistance",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+  write.table(IBE.null, file =paste(c("IBEnull",MapOnly[z],".csv"),sep="",collapse=""),row.names=FALSE, na="",col.names=FALSE, sep=",")
+
+}
+
+
+stopCluster(cl)
