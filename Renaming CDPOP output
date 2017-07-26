@@ -1,0 +1,96 @@
+#rename CDPOP files
+install.packages("filesstrings")
+install.packages("gtools")
+
+
+require(filesstrings)
+require(gtools)
+
+##Renaming Method:
+##Folders:
+
+#Trial
+	#CDPOP connectivity method
+		#Contagion
+			#Habitat
+				#MC run
+
+##Genepop file rename:
+
+#Trial
+	#CDPOP connectivity method
+		#Contagion
+			#Habitat
+				#MC run
+					#Generation
+
+##Genetic output Naming
+
+#Trial
+	#CDPOP connectivity method
+		#Contagion
+			#Habtiat
+				#MC run
+					#Genetic Metric
+						#Generation
+
+##Rename File folders
+
+
+#choose directory where the CDPOP batch files are saved
+setwd(choose.dir()) 
+
+directories<-mixedsort(list.files(pattern="batch*"))
+
+
+#list the methods in order of run order
+method<-c("Grav","IBR","IBE")
+
+#list contagion in order of run order
+con<-c(0.2,0.5,0.8)
+
+#list habitat in order of run order
+hab<-c(0.2,0.5,0.8)
+
+
+
+for(i in 1:10){
+	for(j in 1:length(method)) {
+		for(a in 1:length(con)){
+			for(b in 1:length(hab)){
+				for (c in 1:10){
+					for(z in 1:length(directories)){
+
+file.rename(directories[z], paste0("T",i,"_",method[j],"_","Con",con[a],"_","Hab",hab[b],"_","MC",c))
+					}
+				}
+			}
+		}
+	}
+}
+
+#########################################
+
+##Rename genepop files
+
+#relist the directories to get the new folder names
+
+directories<-mixedsort(list.dirs(,recursive=FALSE))
+
+#for each directory, select the "gen" files
+
+for(z in 2:length(directories)){
+
+	CDPOP_output<-mixedsort(list.files(paste0(directories[z],"//"),pattern="*.gen",full.names=FALSE))
+
+	#for each directory, cycle through the "gen" files and rename them
+
+	for(i in 1:length(CDPOP_output)){
+
+		file.rename(paste0(directories[z],"//",CDPOP_output[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output[i]),".gen"))
+
+		}
+	}
+
+
+
