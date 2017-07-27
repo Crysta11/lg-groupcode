@@ -1,3 +1,6 @@
+#############################Genetics##############################
+
+
 install.packages("PopGenReport")
 install.packages("strataG")
 install.packages("ecodist")
@@ -13,6 +16,7 @@ require(imputeTS)
 library(foreach)
 library(doParallel)
 require(gtools)
+require(filesstrings)
 
 #############Dps function script#####################
 ####Wasn't calling function, so copied and pasted from github####
@@ -64,8 +68,8 @@ pairwise.propShared <- function(gi)
 setwd(choose.dir())
 ##### Directories should be a list of file folders, each containing a CDPOP MC run
 ##### (e.g. con2hab2_2, which will be a file folder with all the necessary "grid.csv" files)
-directories<-list.files()
-
+directories<-mixedsort(list.dirs(,recursive=FALSE))
+directories
 ##Check working directories
 directories
 
@@ -81,33 +85,62 @@ foreach(z=1:length(directories)) %dopar% {
 
 #If the parallel isn't running, do a for-loop
 #for(z in 1:length(directories)){
-
+z<-1
 #create folders for extant population and genetic output
 
-dir.create(paste(c(getwd(),"/",directories[z],"/1_Extant"),sep="",collapse=''))
-dir.create(paste(c(getwd(),"/",directories[z],"/Dps"),sep="",collapse=''))
-dir.create(paste(c(getwd(),"/",directories[z],"/Fst"),sep="",collapse=''))
-dir.create(paste(c(getwd(),"/",directories[z],"/Nei"),sep="",collapse=''))
-dir.create(paste(c(getwd(),"/",directories[z],"/PCA"),sep="",collapse=''))
+#create a general output folder where all files will be saved
 
+dir.create("C://Users//Nathan//Desktop//LDG_Output")
+
+#ID the directory where all the CDPOP output folders are contained
+Master_directory<-getwd()
+
+#ID the directory where the genetic output will be saved
+Master_directory
+Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
+
+###############################################################3
+#Old Code to create folders within each trial run
+#dir.create(paste(c(directories[z],"/1_Extant"),sep="",collapse=''))
+#dir.create(paste(c(directories[z],"/Dps"),sep="",collapse=''))
+#dir.create(paste(c(directories[z],"/Fst"),sep="",collapse=''))
+#dir.create(paste(c(directories[z],"/NeiD"),sep="",collapse=''))
+#dir.create(paste(c(directories[z],"/PCA"),sep="",collapse=''))
+##################################################################
 
 ###set working directory to iteratively read each CDPOP MC folder
 
-setwd(paste(c("C:\\Users\\Nathan\\Downloads\\1Gravity0.2_0.2-.8\\1Gravity0.2_0.2-.8\\",directories[z]),sep="",collapse="")) #choose a directory with all the grid csvs
+setwd(paste(c(Master_directory,"/",directories[z]),sep="",collapse="")) #choose a directory with all the grid csvs
 
 ###list all of the "grid.csv" files wanted for analysis
-CDPOP<-mixedsort(list.files())
+#CDPOP<-mixedsort(list.files())
 #CDPOP<-CDPOP[1:27]
-
+CDPOP
 ###For each "grid.csv" file, calculate desired genetic distnace matrix
+#only read in gen files, ignoring the genind output from CDPOP
 
-for(i in 1:length(CDPOP)){
+Gen_Files<-mixedsort(list.files(pattern="*.gen", full.names=FALSE))
 
-#only read in csv files, ignoring the genind output from CDPOP
-ADat<-mixedsort(list.files(pattern="*.gen", full.names=FALSE))
+for(i in 1:length(Gen_Files)){
+Gen_Files[i]
+split <-strsplit(Gen_Files[i],split="_")
+
+  trial <-paste0(split[[1]][1],"_",split[[1]][2])
+
+  method <-split[[1]][3]
+
+  map <- paste0(split[[1]][4],"_",split[[1]][5],"_",split[[1]][6],"_",split[[1]][7])
+
+  mcrun <-paste0(split[[1]][8],"_",split[[1]][9])
+
+  generation<-paste0(split[[1]][10],"_",extract_numbers(split[[1]][11]))
+
+
 
 ##strataG can calculate Nei's DA
 
+
+########NO LONGER DOING NEIS DA, SO "#" OUT
 
 #####################NEIS DA######################
 
@@ -117,7 +150,7 @@ ADat<-mixedsort(list.files(pattern="*.gen", full.names=FALSE))
 #Ind<-1:length(Adat[,1])
 #Adat<-cbind(Ind,Adat)
 ##Check the new file
-head(Adat)
+##head(Adat)
 ##Convert dataframe to a gtype class
 	##IDs are in the first column
 	##there are 30 alleles/loci
@@ -147,11 +180,11 @@ head(Adat)
 
 ###############################
 #####Pairwise Fst##### #PopGenReport
-GenG<-read.genepop(ADat[i],ncode=3L)
+GenG<-read.genepop(Gen_Files[i],ncode=3L)
 
 Fst<-pairwise.fstb(GenG)
-write.table(Fst,file = paste(c(getwd(),"/Fst/","F",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
-
+write.table(Fst,file = paste0(Output_directory,"/",trial,"_",method,"_Fst_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+Output_directory
 
 #####Pairwise Dps##### #PopGenReport
 
@@ -159,7 +192,7 @@ write.table(Fst,file = paste(c(getwd(),"/Fst/","F",CDPOP[i]),collapse="",sep="")
 
 Dps<-as.matrix(pairwise.propShared(GenG))
 
-write.table(Dps,file = paste(c(getwd(),"/Dps/","D",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(Fst,file = paste0(Output_directory,"/",trial,"_",method,"_Dps_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
 
 
 #######PCA##### #adegenet
@@ -174,7 +207,7 @@ pca.dist<-data.frame(pca$li)
 pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
 pca.mat<-as.matrix(pca.euc)
 
-write.table(pca.mat,file = paste(c(getwd(),"/PCA/","P",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(Fst,file = paste0(Output_directory,"/",trial,"_",method,"_PCA_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
 
 #####Extant Populations#####
 
@@ -185,10 +218,74 @@ write.table(SurvivingPops,file = paste(c(getwd(),"/1_Extant/","Extant",CDPOP[i])
 
 NeiD<-as.matrix(dist.genpop(population,method=1,diag=TRUE,upper=TRUE),ncol=40)
 
-write.table(NeiD,file = paste(c(getwd(),"/Nei/","N",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+write.table(Fst,file = paste0(Output_directory,"/",trial,"_",method,"_NeiD_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
 
 ##### Dkf Kinship Coefficient#####
 
+Dkf <- function(x, method = 1, diag = FALSE, upper = FALSE) {
+
+  if(!is.genpop(x)) stop("x is not a valid genpop object")
+
+  ## haploidy kludge (have to get rid of that later)
+  if(x@ploidy==as.integer(1)){
+  x@tab <- x@tab * 2
+  x@ploidy <- as.integer(2)
+  }
+checkType(x)
+
+
+  METHODS = c("Dkf")
+
+  if (all((1:5)!=method)) {
+    cat("1 = Dkf\n")
+    cat("Select an integer (1-5): ")
+    method <- as.integer(readLines(n = 1))
+  }
+  if (all((1:5)!=method)) (stop ("Non convenient method number"))
+
+  nloc <- length(levels(x@loc.fac))
+  loc.fac <- x@loc.fac
+  X <- makefreq(x,missing="mean",quiet=TRUE)
+  # X is a matrix of allelic frequencies
+  nlig <- nrow(X)
+
+
+#Dkf equation from Microsatellite Analyzer
+#kf=SkSa ( fa,i * fa,j )/D 
+#Sum over all loci and all alleles 
+#fa,i/a,j = frequency of allele a in pop i/j 
+#D=number of loci 
+#The distance can be taken as: Dkf = -ln(kf), or Dfs'= 1-kf 
+
+##Nei
+#kf=SkSa ( fa,i * fa,j )/D 
+#Sum over all loci and all alleles 
+#Sum1= sqrt((nCk1*Sa ( fa,i * fa,i )-1)/(nCk1-1))
+#Sum2= sqrt((nCk2*Sa ( fa,j * fa,j )-1)/(nCk2-1))
+#fa,i/a,j = frequency of allele a in pop i/j 
+#D=number of loci 
+#The distance can be taken as: Dkf = -ln(kf), or Dfs'= 1-kf 
+
+  if (method == 1) { # Dkf
+    d <- X%*%t(X)
+    vec <- (diag(d))
+    d <- d/vec[col(d)]
+    d <- d/vec[row(d)]
+    d <- -log(d)
+    d <- as.dist(d)
+
+    }
+    attr(d, "Size") <- nlig
+    attr(d, "Labels") <- popNames(x)
+    attr(d, "Diag") <- diag
+    attr(d, "Upper") <- upper
+    attr(d, "method") <- METHODS[method]
+    attr(d, "call") <- match.call()
+    class(d) <- "dist"
+    return(d)
+
+}
+Kin<-as.matrix(Dkf(population,method=1,diag=TRUE,upper=TRUE),ncol=40)
 
 }
 
