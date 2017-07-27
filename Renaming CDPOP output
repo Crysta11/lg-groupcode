@@ -61,7 +61,7 @@ for(i in 1:10){
 				for (c in 1:10){
 					for(z in 1:length(directories)){
 
-file.rename(directories[z], paste0("T",i,"_",method[j],"_","Con",con[a],"_","Hab",hab[b],"_","MC",c))
+file.rename(directories[z], paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))
 					}
 				}
 			}
