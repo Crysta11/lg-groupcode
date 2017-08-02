@@ -73,6 +73,23 @@ directories
 ##Check working directories
 directories
 
+##########################################################
+#########Create Master Folders and Directories############
+##########################################################
+
+#create folders for extant population and genetic output
+
+#create a general output folder where all files will be saved
+
+dir.create("C://Users//Nathan//Desktop//LDG_Output")
+
+#ID the directory where all the CDPOP output folders are contained
+Master_directory<-getwd()
+
+#ID the directory where the genetic output will be saved
+
+Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
+
 ###create clusters in order to run in parallel
 
 cl<-makeCluster(8) #select #of processors you have detectCluster() will provide the number
@@ -85,19 +102,7 @@ foreach(z=1:length(directories)) %dopar% {
 
 #If the parallel isn't running, do a for-loop
 #for(z in 1:length(directories)){
-z<-1
-#create folders for extant population and genetic output
 
-#create a general output folder where all files will be saved
-
-dir.create("C://Users//Nathan//Desktop//LDG_Output")
-
-#ID the directory where all the CDPOP output folders are contained
-Master_directory<-getwd()
-
-#ID the directory where the genetic output will be saved
-Master_directory
-Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
 
 ###############################################################3
 #Old Code to create folders within each trial run
