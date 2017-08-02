@@ -115,7 +115,7 @@ setwd(paste(c(Master_directory,"/",directories[z]),sep="",collapse="")) #choose 
 ###list all of the "grid.csv" files wanted for analysis
 #CDPOP<-mixedsort(list.files())
 #CDPOP<-CDPOP[1:27]
-CDPOP
+#CDPOP
 ###For each "grid.csv" file, calculate desired genetic distnace matrix
 #only read in gen files, ignoring the genind output from CDPOP
 
