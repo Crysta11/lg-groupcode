@@ -44,7 +44,7 @@ directories<-mixedsort(list.files(pattern="batch*"))
 
 
 #list the methods in order of run order
-method<-c("Grav","IBR","IBE")
+method<-c("Grav","IBR","IBE") #Order of the models may be dependent on folder structure from Jane
 
 #list contagion in order of run order
 con<-c(0.2,0.5,0.8)
@@ -54,11 +54,11 @@ hab<-c(0.2,0.5,0.8)
 
 
 
-for(i in 1:10){
-	for(j in 1:length(method)) {
+for(i in 1:10){ #for the number of trials
+	for(j in 1:length(method)) { 
 		for(a in 1:length(con)){
 			for(b in 1:length(hab)){
-				for (c in 1:10){
+				for (c in 1:10){ #MC runs for the code
 					for(z in 1:length(directories)){
 
 file.rename(directories[z], paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))
@@ -79,7 +79,7 @@ directories<-mixedsort(list.dirs(,recursive=FALSE))
 
 #for each directory, select the "gen" files
 
-for(z in 2:length(directories)){
+for(z in 1:length(directories)){
 
 	CDPOP_output<-mixedsort(list.files(paste0(directories[z],"//"),pattern="*.gen",full.names=FALSE))
 
