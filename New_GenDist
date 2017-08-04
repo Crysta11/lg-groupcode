@@ -72,49 +72,49 @@ pairwise.propShared <- function(gi)
 
 
 Dkf <- function(x, method = 1, diag = FALSE, upper = FALSE) {
-
+  
   if(!is.genpop(x)) stop("x is not a valid genpop object")
-
+  
   ## haploidy kludge (have to get rid of that later)
   if(x@ploidy==as.integer(1)){
-  x@tab <- x@tab * 2
-  x@ploidy <- as.integer(2)
+    x@tab <- x@tab * 2
+    x@ploidy <- as.integer(2)
   }
-checkType(x)
-
-
+  checkType(x)
+  
+  
   METHODS = c("Dkf")
-
+  
   if (all((1:5)!=method)) {
     cat("1 = Dkf\n")
     cat("Select an integer (1-5): ")
     method <- as.integer(readLines(n = 1))
   }
   if (all((1:5)!=method)) (stop ("Non convenient method number"))
-
+  
   nloc <- length(levels(x@loc.fac))
   loc.fac <- x@loc.fac
   X <- makefreq(x,missing="mean",quiet=TRUE)
   # X is a matrix of allelic frequencies
   nlig <- nrow(X)
-
-
-#Dkf equation from Microsatellite Analyzer
-#kf=SkSa ( fa,i * fa,j )/D 
-#Sum over all loci and all alleles 
-#fa,i/a,j = frequency of allele a in pop i/j 
-#D=number of loci 
-#The distance can be taken as: Dkf = -ln(kf), or Dfs'= 1-kf 
-
-##Nei
-#kf=SkSa ( fa,i * fa,j )/D 
-#Sum over all loci and all alleles 
-#Sum1= sqrt((nCk1*Sa ( fa,i * fa,i )-1)/(nCk1-1))
-#Sum2= sqrt((nCk2*Sa ( fa,j * fa,j )-1)/(nCk2-1))
-#fa,i/a,j = frequency of allele a in pop i/j 
-#D=number of loci 
-#The distance can be taken as: Dkf = -ln(kf), or Dfs'= 1-kf 
-
+  
+  
+  #Dkf equation from Microsatellite Analyzer
+  #kf=SkSa ( fa,i * fa,j )/D 
+  #Sum over all loci and all alleles 
+  #fa,i/a,j = frequency of allele a in pop i/j 
+  #D=number of loci 
+  #The distance can be taken as: Dkf = -ln(kf), or Dfs'= 1-kf 
+  
+  ##Nei
+  #kf=SkSa ( fa,i * fa,j )/D 
+  #Sum over all loci and all alleles 
+  #Sum1= sqrt((nCk1*Sa ( fa,i * fa,i )-1)/(nCk1-1))
+  #Sum2= sqrt((nCk2*Sa ( fa,j * fa,j )-1)/(nCk2-1))
+  #fa,i/a,j = frequency of allele a in pop i/j 
+  #D=number of loci 
+  #The distance can be taken as: Dkf = -ln(kf), or Dfs'= 1-kf 
+  
   if (method == 1) { # Dkf
     d <- X%*%t(X)
     vec <- (diag(d))
@@ -122,17 +122,17 @@ checkType(x)
     d <- d/vec[row(d)]
     d <- -log(d)
     d <- as.dist(d)
-
-    }
-    attr(d, "Size") <- nlig
-    attr(d, "Labels") <- popNames(x)
-    attr(d, "Diag") <- diag
-    attr(d, "Upper") <- upper
-    attr(d, "method") <- METHODS[method]
-    attr(d, "call") <- match.call()
-    class(d) <- "dist"
-    return(d)
-
+    
+  }
+  attr(d, "Size") <- nlig
+  attr(d, "Labels") <- popNames(x)
+  attr(d, "Diag") <- diag
+  attr(d, "Upper") <- upper
+  attr(d, "method") <- METHODS[method]
+  attr(d, "call") <- match.call()
+  class(d) <- "dist"
+  return(d)
+  
 }
 ##########################
 #####File format set to have folders of all the CDPOP runs within the working directory
@@ -170,142 +170,141 @@ Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
 
 ###create clusters in order to run in parallel
 
-cl<-makeCluster(8) #laptop cluster code-select #of processors you have detectCluster() will provide the number 
+#cl<-makeCluster(8) #laptop cluster code-select #of processors you have detectCluster() will provide the number 
 
 
 ##if no parallel back end registered for "foreach" loop, use:
-registerDoParallel(cl) #laptop cluster code
+#registerDoParallel(cl) #laptop cluster code
 
-foreach(z=1:length(directories)) %dopar% { #laptop cluster code
-
-#If the parallel isn't running, do a for-loop
-#for(z in 1:length(directories)){
-
-
-###############################################################
-#Old Code to create folders within each trial run
-#dir.create(paste(c(directories[z],"/1_Extant"),sep="",collapse=''))
-#dir.create(paste(c(directories[z],"/Dps"),sep="",collapse=''))
-#dir.create(paste(c(directories[z],"/Fst"),sep="",collapse=''))
-#dir.create(paste(c(directories[z],"/NeiD"),sep="",collapse=''))
-#dir.create(paste(c(directories[z],"/PCA"),sep="",collapse=''))
-##################################################################
-
-###set working directory to iteratively read each CDPOP MC folder
-
-setwd(paste(c(Master_directory,"/",directories[z]),sep="",collapse="")) #choose a directory with all the grid gen
-
-#only read in gen files, ignoring the genind output from CDPOP
-
-Gen_Files<-mixedsort(list.files(pattern="*.gen", full.names=FALSE))
-
-for(i in 1:length(Gen_Files)){
-
-split <-strsplit(Gen_Files[i],split="_")
-
-  trial <-paste0(split[[1]][1],"_",split[[1]][2])
-
-  method <-split[[1]][3]
-
-  map <- paste0(split[[1]][4],"_",split[[1]][5],"_",split[[1]][6],"_",split[[1]][7])
-
-  mcrun <-paste0(split[[1]][8],"_",split[[1]][9])
-
-  generation<-paste0(split[[1]][10],"_",extract_numbers(split[[1]][11]))
-
-
-
-##strataG can calculate Nei's DA
-
-
-########NO LONGER DOING NEIS DA, SO "#" OUT
-
-#####################NEIS DA######################
-
-##Individuals have duplicate IDs, so create a column of unique IDs
-##FOLLOW UP ON WHY THIS HAPPENED?
-#Adat<-na.omit(read.csv(ADat[1],header=T))
-#Ind<-1:length(Adat[,1])
-#Adat<-cbind(Ind,Adat)
-##Check the new file
-##head(Adat)
-##Convert dataframe to a gtype class
-	##IDs are in the first column
-	##there are 30 alleles/loci
-	##the loci data starts on colmn 10 now
-
-##Calculate Nei's DA from the gtype object
-
-#NDAGenG<-neiDa(GenG)
-
-##create a dist matrix from the Nei's DA output
-
-## for40 populations, so M matrix is 40x40
-
-#	M<-matrix(NA,ncol=length(unique(GenG@strata)),nrow=length(unique(GenG@strata)))
-#	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
-#	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
-#	M[is.na(M)]<-0
-
-###When resampling cost-distance matrices, will need to know which populations went extinct.
-###Write the surviving populations to be loaded in and used to resample during analyses.
-
-#SurvivingPops<-length(GenG@strata[,1])
-
-#write.table(M,file = paste(c(getwd(),"/Nei/","N",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
-#write.table(SurvivingPops,file = paste(c(getwd(),"/1_Extant/","Extant",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
-
-
-###############################
-#####Pairwise Fst##### #PopGenReport
-GenG<-read.genepop(Gen_Files[i],ncode=3L)
-
-Fst<-pairwise.fstb(GenG)
-write.table(Fst,file = paste0(Output_directory,"/",trial,"_",method,"_Fst_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
-
-
-#####Pairwise Dps##### #PopGenReport
-
-#PCA and Dps cannot do NA values, so set allele freq. to zero for those##
-
-Dps<-as.matrix(pairwise.propShared(GenG))
-
-write.table(Dps,file = paste0(Output_directory,"/",trial,"_",method,"_Dps_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
-
-
-#######PCA##### #adegenet
-
-population<-genind2genpop(GenG)
-
-PCA <- scaleGen(population, scale=FALSE)
-
-pca<-dudi.pca(PCA, center=FALSE, scale=FALSE,scannf=FALSE,nf=2)
-pca.dist<-data.frame(pca$li)
-
-pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
-pca.mat<-as.matrix(pca.euc)
-
-write.table(pca.mat,file = paste0(Output_directory,"/",trial,"_",method,"_PCA_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
-
-#####Extant Populations#####
-##Check this##
-SurvivingPops<-length((population@tab[,1]))
-write.table(SurvivingPops,file = paste0(Output_directory,"/",trial,"_",method,"_Extant_",map,"_",mcrun,"_",generation,".csv"))
-
-#######Nei's D ##### #adegenet
-
-NeiD<-as.matrix(dist.genpop(population,method=1,diag=TRUE,upper=TRUE),ncol=40)
-
-write.table(NeiD,file = paste0(Output_directory,"/",trial,"_",method,"_NeiD_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
-
-##### Dkf Kinship Coefficient#####
-
-Kin<-as.matrix(Dkf(population,method=1,diag=TRUE,upper=TRUE),ncol=40)
-write.table(Kin,file = paste0(Output_directory,"/",trial,"_",method,"_Dkf_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
-
+#foreach(z=1:length(directories)) %dopar% { #laptop cluster code
+  
+  #If the parallel isn't running, do a for-loop
+  for(z in 1:length(directories)){
+  
+  
+  ###############################################################
+  #Old Code to create folders within each trial run
+  #dir.create(paste(c(directories[z],"/1_Extant"),sep="",collapse=''))
+  #dir.create(paste(c(directories[z],"/Dps"),sep="",collapse=''))
+  #dir.create(paste(c(directories[z],"/Fst"),sep="",collapse=''))
+  #dir.create(paste(c(directories[z],"/NeiD"),sep="",collapse=''))
+  #dir.create(paste(c(directories[z],"/PCA"),sep="",collapse=''))
+  ##################################################################
+  
+  ###set working directory to iteratively read each CDPOP MC folder
+  
+  setwd(paste(c(Master_directory,"/",directories[z]),sep="",collapse="")) #choose a directory with all the grid gen
+  
+  #only read in gen files, ignoring the genind output from CDPOP
+  head(Gen_Files)
+  Gen_Files<-mixedsort(list.files(pattern="\\.gen$", full.names=FALSE))
+  
+  Extant_Pop_Files<-mixedsort(list.files(pattern="\\.csv$",full.names=FALSE))
+  
+    for(i in 1:length(Gen_Files)){
+    
+    split <-strsplit(Gen_Files[i],split="_")
+    
+    trial <-paste0(split[[1]][1],"_",split[[1]][2])
+    
+    method <-split[[1]][3]
+    
+    map <- paste0(split[[1]][4],"_",split[[1]][5],"_",split[[1]][6],"_",split[[1]][7])
+    
+    mcrun <-paste0(split[[1]][8],"_",split[[1]][9])
+    
+    generation<-paste0(split[[1]][10],"_",extract_numbers(split[[1]][11]))
+    
+    
+  
+    ##strataG can calculate Nei's DA
+    
+    
+    ########NO LONGER DOING NEIS DA, SO "#" OUT
+    
+    #####################NEIS DA######################
+    
+    ##Individuals have duplicate IDs, so create a column of unique IDs
+    ##FOLLOW UP ON WHY THIS HAPPENED?
+    #Adat<-na.omit(read.csv(ADat[1],header=T))
+    #Ind<-1:length(Adat[,1])
+    #Adat<-cbind(Ind,Adat)
+    ##Check the new file
+    ##head(Adat)
+    ##Convert dataframe to a gtype class
+    ##IDs are in the first column
+    ##there are 30 alleles/loci
+    ##the loci data starts on colmn 10 now
+    
+    ##Calculate Nei's DA from the gtype object
+    
+    #NDAGenG<-neiDa(GenG)
+    
+    ##create a dist matrix from the Nei's DA output
+    
+    ## for40 populations, so M matrix is 40x40
+    
+    #	M<-matrix(NA,ncol=length(unique(GenG@strata)),nrow=length(unique(GenG@strata)))
+    #	M[lower.tri(M,diag=F)]<-NDAGenG[,3]
+    #	M[upper.tri(M,diag=F)]<-t(M)[upper.tri(M)]
+    #	M[is.na(M)]<-0
+    
+    ###When resampling cost-distance matrices, will need to know which populations went extinct.
+    ###Write the surviving populations to be loaded in and used to resample during analyses.
+    
+    #SurvivingPops<-length(GenG@strata[,1])
+    
+    #write.table(M,file = paste(c(getwd(),"/Nei/","N",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+    #write.table(SurvivingPops,file = paste(c(getwd(),"/1_Extant/","Extant",CDPOP[i]),collapse="",sep=""),row.names=FALSE,col.names=FALSE,sep=",")
+    
+    
+    ###############################
+    #####Pairwise Fst##### #PopGenReport
+    GenG<-read.genepop(Gen_Files[i],ncode=3L)
+    
+    Fst<-pairwise.fstb(GenG)
+    write.table(Fst,file = paste0(Output_directory,"/",trial,"_",method,"_Fst_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+    
+    
+    #####Pairwise Dps##### #PopGenReport
+    
+    #PCA and Dps cannot do NA values, so set allele freq. to zero for those##
+    
+    Dps<-as.matrix(pairwise.propShared(GenG))
+    
+    write.table(Dps,file = paste0(Output_directory,"/",trial,"_",method,"_Dps_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+    
+    
+    #######PCA##### #adegenet
+    
+    population<-genind2genpop(GenG)
+    
+    PCA <- scaleGen(population, scale=FALSE)
+    
+    pca<-dudi.pca(PCA, center=FALSE, scale=FALSE,scannf=FALSE,nf=2)
+    pca.dist<-data.frame(pca$li)
+    
+    pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
+    pca.mat<-as.matrix(pca.euc)
+    
+    write.table(pca.mat,file = paste0(Output_directory,"/",trial,"_",method,"_PCA_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+    
+    #####Extant Populations#####
+    ##Check this##
+    SurvivingPops<-unique(as.vector(read.csv(paste0(Master_directory,"/",directories[z],"/",Extant_Pop_Files[i]))[,1]))
+    write.table(SurvivingPops,file = paste0(Output_directory,"/",trial,"_",method,"_Extant_",map,"_",mcrun,"_",generation,".csv"))
+                
+     #######Nei's D ##### #adegenet
+     
+     NeiD<-as.matrix(dist.genpop(population,method=1,diag=TRUE,upper=TRUE),ncol=40)
+                
+     write.table(NeiD,file = paste0(Output_directory,"/",trial,"_",method,"_NeiD_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+                
+    ##### Dkf Kinship Coefficient#####
+                
+     Kin<-as.matrix(Dkf(population,method=1,diag=TRUE,upper=TRUE),ncol=40)
+     write.table(Kin,file = paste0(Output_directory,"/",trial,"_",method,"_Dkf_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+                
+  }
+  
 }
-
-}
-
-###Need to stop clusters from continuing on the computer after runing analyses
-stopCluster(cl) #laptop cluster code
