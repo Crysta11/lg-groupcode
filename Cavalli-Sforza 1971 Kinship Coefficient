@@ -1,0 +1,52 @@
+require(adegenet)
+Try<-read.genepop(choose.files(),ncode=3L)
+Try_Pop<-genind2genpop(Try)
+
+
+#number of loci
+  nloc <- length(levels(Try_Pop@loc.fac))
+
+## of loci separated by number of alleles
+  loc.fac <- Try_Pop@loc.fac
+
+##make an allele frequency table
+  X <- makefreq(Try_Pop,missing="NA",quiet=TRUE)
+
+
+	#nlig=the number of populations
+  nlig <- nrow(X)
+
+#Dkf equation from Microsatellite Analyzer
+  #kf=Sum of Loci (Sum of alleles ( fa,i * fa,j )))/D 
+  #Sum over all loci and all alleles 
+  #fa,i/a,j = frequency of allele a in pop i/j 
+  #D=number of loci 
+  #The distance can be taken as: Dkf = -ln(kf), or Dfs'= 1-kf 
+
+##create an empty matrix for population comparisons
+
+Dkf_dist<-matrix(ncol=nlig,nrow=nlig)
+
+
+##For each population pairs, calculate the kinship coefficient
+for(z in 1:(nlig-1)){
+
+##only need to calculate 1/2 of the table, so z+1 here
+
+for(i in (z+1):(nlig)){ 
+
+	##pop1 to pop2 is equal to all the allele frequencies multiplied
+	## together, then summed. Then divided by the number of loci 
+	## and subtracted from one (Cavalli-Sforza 1971-The Genetics of Human Populations)
+
+
+	Dkf_dist[z,i]<-1-(sum(X[z,]*X[i,])/length(Try_Pop@loc.n.all))
+}
+}
+
+##create a symmetrical matrix from 
+Dkf_dist[lower.tri(Dkf_dist)]<-t(Dkf_dist)[lower.tri(Dkf_dist)]
+diag(Dkf_dist)<-0
+
+Dkf_dist
+plot(Dkf_dist)
