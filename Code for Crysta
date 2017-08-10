@@ -1,0 +1,375 @@
+#############################
+####PACKAGE INSTALLATION#####
+#############################
+
+
+install.packages("PopGenReport")
+install.packages("strataG")
+install.packages("ecodist")
+install.packages("adegenet")
+install.packages("imputeTS")
+install.packages("poppr")
+install.packages("doParallel")
+install.packages("foreach")
+install.packages("gtools")
+install.packages("filesstrings")
+
+##########################
+###package requirements###
+##########################
+
+require(PopGenReport)
+require(poppr)
+require(strataG)
+require(ecodist)
+require(adegenet)
+require(imputeTS)
+require(foreach)
+require(doParallel)
+require(gtools)
+require(filesstrings)
+
+
+########################################################
+#################### FILE RENAME #######################
+########################################################
+
+##Renaming Method:
+##Folders:
+
+#Trial
+#CDPOP connectivity method
+#Contagion
+#Habitat
+#MC run
+
+##Genepop file rename:
+
+#Trial
+#CDPOP connectivity method
+#Contagion
+#Habitat
+#MC run
+#Generation
+
+##Genetic output Naming
+
+#Trial
+#CDPOP connectivity method
+#Contagion
+#Habtiat
+#MC run
+#Genetic Metric
+#Generation
+
+##Rename File folders
+
+
+#choose directory where the CDPOP batch files are saved
+setwd(choose.dir()) 
+
+directories<-mixedsort(list.files(pattern="batch*"))
+
+
+#list the methods in order of run order
+method<-c("Grav","IBR","IBE") #Order of the models may be dependent on folder structure from Jane
+
+#list contagion in order of run order
+con<-c(0.2,0.5,0.8)
+
+#list habitat in order of run order
+hab<-c(0.2,0.5,0.8)
+
+
+
+for(i in 1:10){ #for the number of trials
+  for(j in 1:length(method)) { 
+    for(a in 1:length(con)){
+      for(b in 1:length(hab)){
+        for (c in 1:10){ #MC runs for the code
+          for(z in 1:length(directories)){
+            
+            file.rename(directories[z], paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))
+          }
+        }
+      }
+    }
+  }
+}
+
+#########################################
+
+##Rename genepop files
+
+#relist the directories to get the new folder names
+
+directories<-mixedsort(list.dirs(,recursive=FALSE))
+
+#for each directory, select the "gen" files
+
+for(z in 1:length(directories)){
+  
+  CDPOP_output_gen<-mixedsort(list.files(paste0(directories[z],"//"),pattern="*.gen",full.names=FALSE))
+  
+  #for each directory, cycle through the "gen" files and rename them
+  
+  for(i in 1:length(CDPOP_output_gen)){
+    
+    file.rename(paste0(directories[z],"//",CDPOP_output_gen[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output_gen[i]),".gen"))
+
+  }
+##rename .csv files
+
+  CDPOP_output_csv<-mixedsort(list.files(paste0(directories[z],"//"),pattern="*.csv",full.names=FALSE))
+  
+  #for each directory, cycle through the "csv" files and rename them
+  
+  for(i in 1:length(CDPOP_output_csv)){
+    
+    file.rename(paste0(directories[z],"//",CDPOP_output_csv[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output_csv[i]),".csv"))
+    
+  }
+}
+
+
+#########################################################################################################
+######################### GENETIC DISTANCE CALCULATION ##################################################
+#########################################################################################################
+
+#############################Genetics##############################
+
+
+#############Dps function script#################################
+####Wasn't calling function, so copied and pasted from github####
+
+pairwise.propShared <- function(gi)
+{
+  n.pops <- length(unique(pop(gi)))
+  allPairs <- combn(1:n.pops, 2)
+  gen.mat<- matrix(0, nrow=n.pops, ncol=n.pops)
+  pops <- seppop(gi)
+  pspop <- function(x) 
+  {
+    pp  <- seppop(x)
+    p1 <- pp[[1]]
+    p2 <- pp[[2]]
+    
+    na <- ncol(p1@tab)
+    maf <- NA
+    m1 <- colMeans(p1@tab[,], na.rm=T)/2
+    m2 <- colMeans(p2@tab[,], na.rm=T)/2
+    
+    m12 <- apply(rbind(m1,m2), 2, min, na.rm=T)
+    
+    lfl <- NA
+    facs <- levels(p1@loc.fac)
+    for (i in 1:length(locNames(p1))) 	lfl[i] <- sum(m12[p1@loc.fac==facs[i]])
+    mean(lfl, na.rm=T)	
+  }
+  
+  for (i in 1:ncol(allPairs))
+  {
+    np1 <- allPairs[1,i]
+    np2 <- allPairs[2,i]
+    
+    p12 <- repool(pops[[np1]], pops[[np2]])
+    ps <- pspop(p12)
+    gen.mat[np1,np2] <- ps
+    gen.mat[np2,np1] <- ps
+    
+  }
+  la <- levels(pop(gi))
+  colnames(gen.mat) <- rownames(gen.mat) <- la
+  return(as.dist(gen.mat))
+}
+
+###############################
+####DKF function code##########
+###############################
+
+Cavalli_kinship <- function(x, diag = FALSE, upper = FALSE) {
+
+#Dkf equation from Microsatellite Analyzer
+  #kf=Sum of Loci (Sum of alleles ( fa,i * fa,j )))/D 
+  #Sum over all loci and all alleles 
+  #fa,i/a,j = frequency of allele a in pop i/j 
+  #D=number of loci 
+  #The distance can be taken as: Dkf = -ln(kf), or Dfs'= 1-kf 
+
+##create an empty matrix for population comparisons
+
+  if(!is.genpop(x)) stop("x is not a valid genpop object")
+
+
+##checks to see ploidy of the data
+
+  ## haploidy kludge (have to get rid of that later)
+  if(x@ploidy==as.integer(1)){
+  x@tab <- x@tab * 2
+  x@ploidy <- as.integer(2)
+  }
+  ## check marker type
+  checkType(x)
+
+
+#number of loci
+  nloc <- length(levels(x@loc.fac))
+
+## of loci separated by number of alleles
+  loc.fac <- x@loc.fac
+
+##make an allele frequency table
+  X <- makefreq(x,missing="mean",quiet=TRUE)
+
+##nlig=the number of populations
+  nlig <- nrow(X)
+
+##create an empty matrix for population comparisons
+
+Dkf_dist<-matrix(ncol=nlig,nrow=nlig)
+
+for(z in 1:(nlig-1)){
+
+##only need to calculate 1/2 of the table, so z+1 here
+
+for(i in (z+1):(nlig)){ 
+
+	##pop1 to pop2 is equal to all the allele frequencies multiplied
+	## together, then summed. Then divided by the number of loci 
+	## and subtracted from one (Cavalli-Sforza 1971-The Genetics of Human Populations)
+
+
+	Dkf_dist[z,i]<-1-(sum(X[z,]*X[i,])/length(Try_Pop@loc.n.all))
+}
+}
+
+##create a symmetrical matrix from 
+Dkf_dist[lower.tri(Dkf_dist)]<-t(Dkf_dist)[lower.tri(Dkf_dist)]
+diag(Dkf_dist)<-0
+
+return(Dkf_dist)
+}
+
+##########################
+#####File format set to have folders of all the CDPOP runs within the working directory
+
+
+#setwd(choose.dir()) #Hashtagged because won't need to set this again
+
+
+##### Directories should be a list of file folders, each containing a CDPOP MC run
+##### (e.g. con2hab2_2, which will be a file folder with all the necessary "grid.gen" files)
+
+#directories<-mixedsort(list.dirs(,recursive=FALSE)) #hashtagged because will have this set from the .gen renaming
+
+##Check working directories
+#directories
+
+##########################################################
+#########Create Master Folders and Directories############
+##########################################################
+
+#create folders for extant population and genetic output
+
+#create a general output folder where all files will be saved
+
+dir.create("C://Users//Nathan//Desktop//LDG_Output")
+
+#ID the directory where all the CDPOP output folders are contained
+Master_directory<-getwd()
+
+#ID the directory where the genetic output will be saved
+
+Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
+
+###############################################################
+
+###create clusters in order to run in parallel
+
+#cl<-makeCluster(8) #laptop cluster code-select #of processors you have detectCluster() will provide the number 
+
+
+##if no parallel back end registered for "foreach" loop, use:
+#registerDoParallel(cl) #laptop cluster code
+
+#foreach(z=1:length(directories)) %dopar% { #laptop cluster code
+  
+  #If the parallel isn't running, do a for-loop
+  for(z in 1:length(directories)){
+  
+ 
+  ###set working directory to iteratively read each CDPOP MC folder
+  
+  setwd(paste(c(Master_directory,"/",directories[z]),sep="",collapse="")) #choose a directory with all the grid gen
+  
+  #only read in gen files, ignoring the genind output from CDPOP
+  
+  Gen_Files<-mixedsort(list.files(pattern="\\.gen$", full.names=FALSE))
+  
+  Extant_Pop_Files<-mixedsort(list.files(pattern="\\.csv$",full.names=FALSE))
+  
+    for(i in 1:length(Gen_Files)){
+    
+    split <-strsplit(Gen_Files[i],split="_")
+    
+    trial <-paste0(split[[1]][1],"_",split[[1]][2])
+    
+    method <-split[[1]][3]
+    
+    map <- paste0(split[[1]][4],"_",split[[1]][5],"_",split[[1]][6],"_",split[[1]][7])
+    
+    mcrun <-paste0(split[[1]][8],"_",split[[1]][9])
+    
+    generation<-paste0(split[[1]][10],"_",extract_numbers(split[[1]][11]))
+    
+    
+    ###############################
+    #####Pairwise Fst##### #PopGenReport
+    GenG<-read.genepop(Gen_Files[i],ncode=3L)
+    
+    Fst<-pairwise.fstb(GenG)
+    write.table(Fst,file = paste0(Output_directory,"/",trial,"_",method,"_Fst_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+    
+    
+    #####Pairwise Dps##### #PopGenReport
+    
+    #PCA and Dps cannot do NA values, so set allele freq. to zero for those##
+    
+    Dps<-as.matrix(pairwise.propShared(GenG))
+    
+    write.table(Dps,file = paste0(Output_directory,"/",trial,"_",method,"_Dps_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+    
+    
+    #######PCA##### #adegenet
+    
+    population<-genind2genpop(GenG)
+    
+    PCA <- scaleGen(population, scale=FALSE)
+    
+    pca<-dudi.pca(PCA, center=FALSE, scale=FALSE,scannf=FALSE,nf=2)
+    pca.dist<-data.frame(pca$li)
+    
+    pca.euc<-distance(pca.dist, method = "euclidean", sprange=NULL, spweight=NULL)
+    pca.mat<-as.matrix(pca.euc)
+    
+    write.table(pca.mat,file = paste0(Output_directory,"/",trial,"_",method,"_PCA_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+    
+    #####Extant Populations#####
+    ##Check this##
+    SurvivingPops<-unique(as.vector(read.csv(paste0(Extant_Pop_Files[i]))[,1]))
+    write.table(SurvivingPops,file = paste0(Output_directory,"/",trial,"_",method,"_Extant_",map,"_",mcrun,"_",generation,".csv"))
+                
+     #######Nei's D ##### #adegenet
+     
+     NeiD<-as.matrix(dist.genpop(population,method=1,diag=TRUE,upper=TRUE),ncol=40)
+                
+     write.table(NeiD,file = paste0(Output_directory,"/",trial,"_",method,"_NeiD_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+                
+    ##### Dkf Kinship Coefficient#####
+                
+     Kin<-Cavalli_kinship(population,diag=TRUE,upper=TRUE)
+     write.table(Kin,file = paste0(Output_directory,"/",trial,"_",method,"_Dkf_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
+                
+  }
+  
+}
