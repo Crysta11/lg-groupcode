@@ -180,7 +180,7 @@ Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
   #If the parallel isn't running, do a for-loop
   for(z in 1:length(directories)){
   
-  
+
   ###############################################################
   #Old Code to create folders within each trial run
   #dir.create(paste(c(directories[z],"/1_Extant"),sep="",collapse=''))
@@ -195,7 +195,7 @@ Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
   setwd(paste(c(Master_directory,"/",directories[z]),sep="",collapse="")) #choose a directory with all the grid gen
   
   #only read in gen files, ignoring the genind output from CDPOP
-  head(Gen_Files)
+  
   Gen_Files<-mixedsort(list.files(pattern="\\.gen$", full.names=FALSE))
   
   Extant_Pop_Files<-mixedsort(list.files(pattern="\\.csv$",full.names=FALSE))
@@ -290,7 +290,7 @@ Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
     
     #####Extant Populations#####
     ##Check this##
-    SurvivingPops<-unique(as.vector(read.csv(paste0(Master_directory,"/",directories[z],"/",Extant_Pop_Files[i]))[,1]))
+    SurvivingPops<-unique(as.vector(read.csv(paste0(Extant_Pop_Files[i]))[,1]))
     write.table(SurvivingPops,file = paste0(Output_directory,"/",trial,"_",method,"_Extant_",map,"_",mcrun,"_",generation,".csv"))
                 
      #######Nei's D ##### #adegenet
