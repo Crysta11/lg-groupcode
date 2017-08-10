@@ -87,7 +87,7 @@ for(z in 1:length(directories)){
   
   for(i in 1:length(CDPOP_output_gen)){
     
-    file.rename(paste0(directories[z],"//",CDPOP_output[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output[i]),".gen"))
+    file.rename(paste0(directories[z],"//",CDPOP_output_gen[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output[i]),".gen"))
 
   }
 ##rename .csv files
@@ -98,7 +98,7 @@ for(z in 1:length(directories)){
   
   for(i in 1:length(CDPOP_output_csv)){
     
-    file.rename(paste0(directories[z],"//",CDPOP_output[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output[i]),".csv"))
+    file.rename(paste0(directories[z],"//",CDPOP_output_csv[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output[i]),".csv"))
     
   }
 }
