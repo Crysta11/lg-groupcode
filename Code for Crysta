@@ -82,6 +82,9 @@ hab<-c(0.2,0.5,0.8)
 
 
 
+###Designate what directory should be created
+dir.create("INSERT NEW DIRECTORY PATH")
+
 for(i in 1:10){ #for the number of trials
   for(j in 1:length(method)) { 
     for(a in 1:length(con)){
@@ -89,7 +92,10 @@ for(i in 1:10){ #for the number of trials
         for (c in 1:10){ #MC runs for the code
           for(z in 1:length(directories)){
             
-            file.rename(directories[z], paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))
+	    
+## Insert appropriate directories so that it reads from CDPOP filenames and copies to the new Directory	    
+	    file.rename(from = file.path("INSERT SCRATCH DIRECTORY WITH BATCHRUNS FROM CDPOP", directories[z]), 
+	    	to = file.path("INSERT NEW DIRECTORY",paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))
           }
         }
       }
@@ -102,6 +108,8 @@ for(i in 1:10){ #for the number of trials
 ##Rename genepop files
 
 #relist the directories to get the new folder names
+
+setwd("INSERT NEW DIRECTORY")
 
 directories<-mixedsort(list.dirs(,recursive=FALSE))
 
