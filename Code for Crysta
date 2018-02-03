@@ -3,16 +3,16 @@
 #############################
 
 
-install.packages("PopGenReport")
-install.packages("strataG")
-install.packages("ecodist")
-install.packages("adegenet")
-install.packages("imputeTS")
-install.packages("poppr")
-install.packages("doParallel")
-install.packages("foreach")
-install.packages("gtools")
-install.packages("filesstrings")
+#install.packages("PopGenReport")
+#install.packages("strataG")
+#install.packages("ecodist")
+#install.packages("adegenet")
+#install.packages("imputeTS")
+#install.packages("poppr")
+#install.packages("doParallel")
+#install.packages("foreach")
+#install.packages("gtools")
+#install.packages("filesstrings")
 
 ##########################
 ###package requirements###
@@ -66,9 +66,16 @@ require(filesstrings)
 
 
 #choose directory where the CDPOP batch files are saved
-setwd(choose.dir()) 
+setwd("/scratch/cgantz")
 
-directories<-mixedsort(list.files(pattern="batch*"))
+
+###because of the zipped files, we need to set up code to enter each folder and get directories
+setwd(choose.dir())
+
+D1<-mixedsort(list.files(paste0(getwd(),"/")))
+D2<-mixedsort(list.files(paste0(getwd(),"/",D1,"/"),pattern="_*"))
+D3<-mixedsort(list.files(paste0(getwd(),"/",D1,"/",D2[1],"/")))
+directories<-mixedsort(list.files(paste0(getwd(),"/",D1,"/",D2[1],"/",D3,"/"),pattern="batch*"))
 
 
 #list the methods in order of run order
@@ -83,19 +90,21 @@ hab<-c(0.2,0.5,0.8)
 
 
 ###Designate what directory should be created
-dir.create("INSERT NEW DIRECTORY PATH")
+dir.create("/scratch/cgantz/Rename1")
 
-for(i in 1:10){ #for the number of trials
+
+for(i in 1:1){ #for the number of trials
   for(j in 1:length(method)) { 
     for(a in 1:length(con)){
       for(b in 1:length(hab)){
         for (c in 1:10){ #MC runs for the code
           for(z in 1:length(directories)){
             
-	    
+            
 ## Insert appropriate directories so that it reads from CDPOP filenames and copies to the new Directory	    
-	    file.rename(from = file.path("INSERT SCRATCH DIRECTORY WITH BATCHRUNS FROM CDPOP", directories[z]), 
-	    	to = file.path("INSERT NEW DIRECTORY",paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))
+	    file.rename(from = file.path(paste0(getwd(),"/",D1,"/",D2[1],"/",D3,"/",directories[z])), 
+	    	to = file.path(paste0("/scratch/cgantz/Rename1",
+	    	                      paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))))
           }
         }
       }
@@ -109,7 +118,7 @@ for(i in 1:10){ #for the number of trials
 
 #relist the directories to get the new folder names
 
-setwd("INSERT NEW DIRECTORY")
+setwd("/scratch/cgantz/Rename1")
 
 directories<-mixedsort(list.dirs(,recursive=FALSE))
 
@@ -117,24 +126,24 @@ directories<-mixedsort(list.dirs(,recursive=FALSE))
 
 for(z in 1:length(directories)){
   
-  CDPOP_output_gen<-mixedsort(list.files(paste0(directories[z],"//"),pattern="*.gen",full.names=FALSE))
+  CDPOP_output_gen<-mixedsort(list.files(paste0(directories[z],"/"),pattern="*.gen",full.names=FALSE))
   
   #for each directory, cycle through the "gen" files and rename them
   
   for(i in 1:length(CDPOP_output_gen)){
     
-    file.rename(paste0(directories[z],"//",CDPOP_output_gen[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output_gen[i]),".gen"))
+    file.rename(paste0(directories[z],"/",CDPOP_output_gen[i]),paste0(directories[z],"/",directories[z],"_generation_",extract_numbers(CDPOP_output_gen[i]),".gen"))
 
   }
 ##rename .csv files
 
-  CDPOP_output_csv<-mixedsort(list.files(paste0(directories[z],"//"),pattern="*.csv",full.names=FALSE))
+  CDPOP_output_csv<-mixedsort(list.files(paste0(directories[z],"/"),pattern="*.csv",full.names=FALSE))
   
   #for each directory, cycle through the "csv" files and rename them
   
   for(i in 1:length(CDPOP_output_csv)){
     
-    file.rename(paste0(directories[z],"//",CDPOP_output_csv[i]),paste0(directories[z],"//",directories[z],"_generation_",extract_numbers(CDPOP_output_csv[i]),".csv"))
+    file.rename(paste0(directories[z],"/",CDPOP_output_csv[i]),paste0(directories[z],"/",directories[z],"_generation_",extract_numbers(CDPOP_output_csv[i]),".csv"))
     
   }
 }
@@ -281,40 +290,24 @@ return(Dkf_dist)
 
 #create a general output folder where all files will be saved
 
-dir.create("C://Users//Nathan//Desktop//LDG_Output")
+dir.create("/scratch/cgantz/LDG_Output")
 
 #ID the directory where all the CDPOP output folders are contained
 Master_directory<-getwd()
 
 #ID the directory where the genetic output will be saved
 
-Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
+Output_directory<-"/scratch/cgantz/LDG_Output"
 
-###############################################################
-
-###create clusters in order to run in parallel
-
-#cl<-makeCluster(8) #laptop cluster code-select #of processors you have detectCluster() will provide the number 
-
-
-##if no parallel back end registered for "foreach" loop, use:
-#registerDoParallel(cl) #laptop cluster code
-
-#foreach(z=1:length(directories)) %dopar% { #laptop cluster code
-  
-  #If the parallel isn't running, do a for-loop
-  for(z in 1:length(directories)){
-  
- 
   ###set working directory to iteratively read each CDPOP MC folder
   
   setwd(paste(c(Master_directory,"/",directories[z]),sep="",collapse="")) #choose a directory with all the grid gen
   
   #only read in gen files, ignoring the genind output from CDPOP
   
-  Gen_Files<-mixedsort(list.files(pattern="\\.gen$", full.names=FALSE))
+  Gen_Files<-mixedsort(list.files(pattern="\.gen$", full.names=FALSE))
   
-  Extant_Pop_Files<-mixedsort(list.files(pattern="\\.csv$",full.names=FALSE))
+  Extant_Pop_Files<-mixedsort(list.files(pattern="\.csv$",full.names=FALSE))
   
     for(i in 1:length(Gen_Files)){
     
@@ -380,4 +373,4 @@ Output_directory<-"C:/Users/Nathan/Desktop/LDG_Output"
                 
   }
   
-}
+
