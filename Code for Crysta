@@ -102,7 +102,7 @@ for(i in 1:1){ #for the number of trials
             
 ## Insert appropriate directories so that it reads from CDPOP filenames and copies to the new Directory	    
 	    file.rename(from = file.path(paste0(getwd(),"/",D1,"/",D2[1],"/",D3,"/",directories[z])), 
-	    	to = file.path(paste0("/scratch/cgantz/Rename1",
+	    	to = file.path(paste0("/scratch/cgantz/Rename1/",
 	    	                      paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))))
           }
         }
