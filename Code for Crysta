@@ -70,7 +70,6 @@ setwd("/scratch/cgantz")
 
 
 ###because of the zipped files, we need to set up code to enter each folder and get directories
-setwd(choose.dir())
 
 D1<-mixedsort(list.files(paste0(getwd(),"/")))
 D2<-mixedsort(list.files(paste0(getwd(),"/",D1,"/"),pattern="_*"))
