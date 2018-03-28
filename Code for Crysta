@@ -66,46 +66,50 @@ require(filesstrings)
 
 
 #choose directory where the CDPOP batch files are saved
+
 setwd("/scratch/cgantz")
-
-
 ###because of the zipped files, we need to set up code to enter each folder and get directories
 
-D1<-mixedsort(list.files(paste0(getwd(),"/")))
-D2<-mixedsort(list.files(paste0(getwd(),"/",D1,"/"),pattern="_*"))
-D3<-mixedsort(list.files(paste0(getwd(),"/",D1,"/",D2[1],"/")))
-directories<-mixedsort(list.files(paste0(getwd(),"/",D1,"/",D2[1],"/",D3,"/"),pattern="batch*"))
+D1<-mixedsort(list.files("/scratch/cgantz",pattern="^_"))
 
+#Get Method and Con from CDPOP zip files
 
+##################################
 #list the methods in order of run order
-method<-c("Grav","IBR","IBE") #Order of the models may be dependent on folder structure from Jane
+#method<-c("Grav","IBR","IBE") #Order of the models may be dependent on folder structure from Jane
 
 #list contagion in order of run order
-con<-c(0.2,0.5,0.8)
+#con<-c(0.2,0.5,0.8)
+##################################
 
 #list habitat in order of run order
 hab<-c(0.2,0.5,0.8)
 
 
-
 ###Designate what directory should be created
-dir.create("/scratch/cgantz/Rename1")
+#dir.create("/scratch/cgantz/Rename1")
+dir.create(paste0(getwd(),"/Rename1"))
+created_dir<-paste0(getwd(),"/Rename1")
 
+for(a in 1:length(D1)){
 
-for(i in 1:1){ #for the number of trials
-  for(j in 1:length(method)) { 
-    for(a in 1:length(con)){
-      for(b in 1:length(hab)){
-        for (c in 1:10){ #MC runs for the code
-          for(z in 1:length(directories)){
+  split <-strsplit(D1[a],split="_")
+  
+
+  directories<-mixedsort(list.files(paste0(getwd(),"/",D1[a])))
+      
+  for(b in 1:length(hab)){
+        
+    for (c in 1:10){ #MC runs for the code
+         
+       for(z in 1:length(directories)){
             
-            
-## Insert appropriate directories so that it reads from CDPOP filenames and copies to the new Directory	    
-	    file.rename(from = file.path(paste0(getwd(),"/",D1,"/",D2[1],"/",D3,"/",directories[z])), 
-	    	to = file.path(paste0("/scratch/cgantz/Rename1/",
-	    	                      paste0("T_",i,"_",method[j],"_Con_",con[a],"_Hab_",hab[b],"_MC_",c))))
-          }
-        }
+        
+        ## Insert appropriate directories so that it reads from CDPOP filenames and copies to the new Directory	
+	dir.create(paste0(created_dir,"/T_",paste0(split[[1]][2]),"_",split[[1]][4],"_Con_",split[[1]][3],"_Hab_",hab[b],"_MC_",c))    
+        file.copy(from = file.path(mixedsort(list.files(paste0(getwd(),"/",D1[a],"/",directories[z]),full.names=TRUE))), 
+                    to = file.path(paste0(created_dir,
+                        "/T_",paste0(split[[1]][2]),"_",split[[1]][4],"_Con_",split[[1]][3],"_Hab_",hab[b],"_MC_",c)),recursive=TRUE)
       }
     }
   }
@@ -119,24 +123,25 @@ for(i in 1:1){ #for the number of trials
 
 setwd("/scratch/cgantz/Rename1")
 
+
 directories<-mixedsort(list.dirs(,recursive=FALSE))
 
 #for each directory, select the "gen" files
 
 for(z in 1:length(directories)){
   
-  CDPOP_output_gen<-mixedsort(list.files(paste0(directories[z],"/"),pattern="*.gen",full.names=FALSE))
+  CDPOP_output_gen<-mixedsort(list.files(paste0(directories[z]),pattern="*.gen",full.names=FALSE))
   
   #for each directory, cycle through the "gen" files and rename them
   
   for(i in 1:length(CDPOP_output_gen)){
     
     file.rename(paste0(directories[z],"/",CDPOP_output_gen[i]),paste0(directories[z],"/",directories[z],"_generation_",extract_numbers(CDPOP_output_gen[i]),".gen"))
-
+    
   }
-##rename .csv files
-
-  CDPOP_output_csv<-mixedsort(list.files(paste0(directories[z],"/"),pattern="*.csv",full.names=FALSE))
+  ##rename .csv files
+  
+  CDPOP_output_csv<-mixedsort(list.files(paste0(directories[z]),pattern="*.csv",full.names=FALSE))
   
   #for each directory, cycle through the "csv" files and rename them
   
@@ -146,6 +151,7 @@ for(z in 1:length(directories)){
     
   }
 }
+  
 
 
 #########################################################################################################
