@@ -301,6 +301,7 @@ dir.create("/scratch/cgantz/LDG_Output")
 #ID the directory where all the CDPOP output folders are contained
 Master_directory<-getwd()
 
+
 directories<-mixedsort(list.dirs(,recursive=FALSE))
 
 #ID the directory where the genetic output will be saved
@@ -309,17 +310,15 @@ Output_directory<-"/scratch/cgantz/LDG_Output"
 
 #Choose which generations to compute
 Iterative_gens<-seq(125,1651,25)
-Total_Gens<-c(1:100, Iterative_gens)
+Total_Gens<-c(1:101, Iterative_gens)
 
 #####################################################################
 #####################################################################
 #Create the Genetic Distance Function that will write all the code###
-GD_function<-function(i){ 
-  Gen_Files<-mixedsort(list.files(pattern=".gen$", full.names=FALSE))
- 
-  Extant_Pop_Files<-mixedsort(list.files(pattern=".csv$",full.names=FALSE))
 
-  
+
+
+  GD_function<-function(i){ 
     split <-strsplit(Gen_Files[i],split="_")
     
     trial <-paste0(split[[1]][1],"_",split[[1]][2])
@@ -389,6 +388,8 @@ GD_function<-function(i){
 
   Dir_Function<-function(j){
   setwd(paste(c(Master_directory,"/",directories[j]),sep="",collapse="")) #choose a directory with all the grid gen
+	Gen_Files<-mixedsort(list.files(pattern=".gen$", full.names=FALSE))
+  	Extant_Pop_Files<-mixedsort(list.files(pattern=".csv$",full.names=FALSE))
 	sapply(Total_Gens,GD_function)
   }
   #only read in gen files, ignoring the genind output from CDPOP
