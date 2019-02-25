@@ -364,7 +364,7 @@ GD_function<-function(i){
   
   #####Extant Populations#####
   ##Check this##
-  SurvivingPops<-unique(as.vector(read.csv(paste0(Extant_Pop_Files[i]))[,1]))
+  SurvivingPops<-unique(as.vector(Gen_csv[,1]))
   write.table(SurvivingPops,file = paste0(Output_directory,"/",trial,"_",method,"_Extant_",map,"_",mcrun,"_",generation,".csv"))
   
   #######Nei's D ##### #adegenet
@@ -374,7 +374,7 @@ GD_function<-function(i){
   write.table(NeiD,file = paste0(Output_directory,"/",trial,"_",method,"_NeiD_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
   
   ##### Dkf Kinship Coefficient#####
-  Kin          
+         
   Kin<-Cavalli_kinship(population,diag=TRUE,upper=TRUE)
   write.table(Kin,file = paste0(Output_directory,"/",trial,"_",method,"_Dkf_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
   
@@ -389,7 +389,6 @@ GD_function<-function(i){
 
 Dir_Function<-function(j){
   setwd(paste(c(Master_directory,"/",directories[j]),sep="",collapse="")) #choose a directory with all the grid gen
-  Gen_Files<-mixedsort(list.files(pattern=".gen$", full.names=FALSE))
   Extant_Pop_Files<-mixedsort(list.files(pattern=".csv$",full.names=FALSE))
   sapply(Total_Gens,GD_function)
 }
