@@ -1,0 +1,148 @@
+require(GeNetIt)
+require(Matrix)
+
+##create output data frames
+	OUT_gravity<-data.frame(trial=NA,driver=NA,genetic=NA,con=NA,hab=NA,mc=NA,generation=NA,RMSE=NA,RMSENull=NA,deltaAIC=NA)
+	OUT_glmm<- data.frame(trial=NA,driver=NA,genetic=NA,con=NA,hab=NA,mc=NA,generation=NA,RMSE=NA,RMSENull=NA,deltaAIC=NA)
+	
+#Read in the genetic distance files--this path will just need to be changed for each trial
+	setwd("/scratch/cgantz/LDG_Output")
+	#Pathway to Jane's test output folder
+	#setwd("/Users/Jane/Desktop/LG/LDG_Output_slurm1")
+	#Read in the genetic distance files--this assumes that only the genetic distance and extant files have T_
+	allfiles = list.files(pattern="T_1")
+	extantfiles = list.files(pattern='Extant')
+	genetics <-allfiles[!allfiles %in% extantfiles]
+
+#Loop through all the genetic output files	
+	for(i in 1:length(genetics)){
+	  #break up the Trial and information so we can extract files matching a pattern	  
+	  split <-strsplit(genetics[i],split="_")
+	  trial=as.numeric(split[[1]][2])
+	  driver=split[[1]][3]
+	  driver1=strsplit(driver,split="1")
+	  driver1=driver1[[1]][1]
+	  genetic=split[[1]][4]
+	  con=as.numeric(split[[1]][6])
+	  hab=as.numeric(split[[1]][8])
+	  mc=as.numeric(split[[1]][10])
+	  generation=as.numeric(strsplit(split[[1]][12],split="[.]")[[1]][1])
+	  
+	  
+	  #Create the habitat parameter using resistance distances
+	  #Read in the ?? Is this the gravity matrix?  Basically, the path just needs to be added.
+	  #DistMat<-as.matrix(read.csv(paste(c("/Users/Jane/Desktop/LG/XY/",driver1,"_CD_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+	  DistMat<-as.matrix(read.csv(paste(c("/scratch/cgantz/CD_XY_files/",driver1,"_CD_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+	  PopDist<-as.matrix(DistMat[!duplicated(DistMat),!duplicated(DistMat)])
+	  #Read in the IBD distances--this assumes that the IBD files are in the Rename folder, if they aren't, the path can be changed
+	  IBDDist<-as.matrix(read.csv(paste(c("/scratch/cgantz/CD_XY_files/",driver1,"_IBDburnin_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+	  #IBDDist<-as.matrix(read.csv(paste(c("/Users/Jane/Desktop/LG/XY/",driver1,"_IBDburnin_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+	  PopIBD<-as.matrix(IBDDist[!duplicated(IBDDist),!duplicated(IBDDist)])
+	  
+	  ##Since we didn't record habitat parameters when generating the files, use initial population assignments in lieu of habitat variables
+	  #this code generated population sizes for gravity CDPOP input:
+	  #results$prop.prop <- round((results$prop.landscape/total)*600+10)
+	  unique_pop = unique(DistMat[,1])
+	  table_pop = rbind(label=unique_pop, count=sapply(unique_pop,function(x)sum(DistMat[,1]==x)))
+	  PopSize<-table_pop[2,] #extract the counted totals to create the PopSize vector
+	  habitat<-(PopSize-10)/600
+	  habitat1 <- t(matrix(c(habitat),length(habitat),length(habitat)))
+	  
+	  #Read in the genetic distance matrix
+	  Gen <-as.matrix(read.csv(file=genetics[i], header=FALSE))
+		diag(Gen)<-NA
+		Gen<-as.vector(Gen)
+		Gen<-na.omit(Gen)
+		#Read in the extant population files
+		extant.pop<-as.matrix(read.csv(paste(c("T_",trial,"_",driver,"_Extant_Con_",con,"_Hab_",hab,"_MC_",mc,"_generation_",generation,".csv"),sep="",collapse=""),header=FALSE, sep=",")) #Changed header to TRUE
+    #Create vector for the from population
+		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+		diag(pop1)<-NA
+		pop1<-as.vector(pop1)
+		pop1<-na.omit(pop1)
+		#Create vector for the to population
+		pop2 <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+		diag(pop2)<-NA
+		pop2<-as.vector(pop2)
+		pop2<-na.omit(pop2)
+    #Resistance distances between popoulations
+		PopDist1<-PopDist[extant.pop[,1],extant.pop[,1]]
+		diag(PopDist1)<-NA
+		PopDist1<-as.vector(PopDist1)
+		PopDist1<-na.omit(PopDist1)
+		#Create vector for distance parameter
+		PopIBD1<-PopIBD[extant.pop[,1],extant.pop[,1]]
+		diag(PopIBD1)<-NA
+		PopIBD1<-as.vector(PopIBD1)
+		PopIBD1<-na.omit(PopIBD1)
+		#Create vector for the habitat parameter (gravity model)
+		habitat2<-habitat1[extant.pop[,1],extant.pop[,1]]
+		diag(habitat2)<-NA
+		habitat2<-as.vector(habitat2)
+		habitat2<-na.omit(habitat2)
+		
+		#Null<-rep(1,length.out=length(habitat2))
+
+    #assign each to/from pair a random number for the null matrices currently
+		Null<-sample(1:length(habitat2), length(habitat2), replace=F)
+		# Each predictor variable is centred around the mean.
+		PopDist1 <- scale(PopDist1)     
+		PopIBD1<-scale(PopIBD1)	
+		Gen<-scale(Gen)
+		Hab<-scale(habitat2)
+		Null<-scale(Null)	
+
+#Total dataframe
+Distdf <- data.frame(pop1, pop2, PopDist1, PopIBD1, Hab, Gen, Null)
+
+#Gravity model
+mod_C<-gravity(y="Gen",x=c("Hab","PopDist1"),d="PopIBD1",group="pop1",data=Distdf,ln=TRUE,constrained=TRUE)
+mod_NULL<-gravity(y="Gen",x="Null",d="PopIBD1",group="pop1",data=Distdf,ln=TRUE,constrained=TRUE)
+
+#Mixed model
+mod_mixed<-gravity(y="Gen",x="PopDist1",d="PopIBD1",group="pop1",data=Distdf, ln=FALSE, constrained=TRUE)
+mod_mixed_null<-gravity(y="Gen", x="Null",d="PopIBD1",group="pop1", data=Distdf, ln=FALSE, constrained=TRUE)
+
+#Extract the RMSE value from the model... since it's in astring, need to cut it from the string
+val_C<-summary(mod_C)
+RootRsq_C<-as.numeric(unlist(regmatches(val_C,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_C))))
+
+val_NULL<-summary(mod_NULL)
+RootRsq_NULL<-as.numeric(unlist(regmatches(val_NULL,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_NULL))))
+
+val_mixed<-summary(mod_mixed)
+RootRsq_mixed<-as.numeric(unlist(regmatches(val_mixed,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed))))
+
+val_mixed_null<-summary(mod_mixed_null)
+RootRsq_mixed_null<-as.numeric(unlist(regmatches(val_mixed_null,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",val_mixed_null))))
+
+##bind the RMSE and AIC output
+		delta.aic.grav<-mod_C$AIC-mod_NULL$AIC
+		output_gravity<-cbind(trial,driver,genetic,con,hab,mc,generation,RootRsq_C,RootRsq_NULL,delta.aic.grav)
+		
+		delta.aic.glmm<-mod_mixed$AIC-mod_mixed_null$AIC
+		output_glmm<-cbind(trial,driver,genetic,con,hab,mc,generation,RootRsq_mixed,RootRsq_mixed_null,delta.aic.glmm)
+
+ #name the columns and rows--separate columns for con, hab, etc will make plotting in ggplot much easier
+	colnames(output_gravity)<-c("trial","driver","genetic","con","hab","mc","generation","RMSE","RMSENull","deltaAIC")
+	colnames(output_glmm)<-c("trial","driver","genetic","con","hab","mc","generation","RMSE","RMSENull","deltaAIC")
+    #Change to dataframe so everything combines well.
+    output_gravity <- as.data.frame(output_gravity)	
+	  output_glmm <- as.data.frame((output_glmm))
+	  #Add new data to the dataframe
+		OUT_gravity<-rbind(OUT_gravity,output_gravity)
+		OUT_glmm<-rbind(OUT_glmm,output_glmm)
+print(i)
+}
+
+#omit the initial NAs
+	OUT_gravity<-na.omit(OUT_gravity)
+	OUT_glmm<-na.omit(OUT_glmm)
+
+	write.csv(OUT_gravity, paste(c("/scratch/cgantz/model_output/T_",trial,"_Grav",".csv"),sep="",collapse=""))
+	#write.csv(OUT_gravity, paste(c("/Users/Jane/Desktop/LG/T_",trial,"_Grav",".csv"),sep="",collapse=""))
+	write.csv(OUT_glmm, paste(c("/scratch/cgantz/model_output/T_",trial,"_GLMM",".csv"),sep="",collapse=""))
+	#write.csv(OUT_glmm, paste(c("/Users/Jane/Desktop/LG/T_",trial,"_GLMM",".csv"),sep="",collapse=""))
+
+
+
