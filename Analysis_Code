@@ -54,8 +54,9 @@ require(Matrix)
 		Gen<-as.vector(Gen)
 		Gen<-na.omit(Gen)
 		#Read in the extant population files
-		extant.pop<-as.matrix(read.csv(paste(c("T_",trial,"_",driver,"_Extant_Con_",con,"_Hab_",hab,"_MC_",mc,"_generation_",generation,".csv"),sep="",collapse=""),header=FALSE, sep=",")) #Changed header to TRUE
+		#extant.pop<-as.matrix(read.csv(paste(c("T_",trial,"_",driver,"_Extant_Con_",con,"_Hab_",hab,"_MC_",mc,"_generation_",generation,".csv"),sep="",collapse=""),header=FALSE, sep=",")) #Changed header to TRUE
     #Create vector for the from population
+    		extant.pop <-c(1:40)
 		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
 		diag(pop1)<-NA
 		pop1<-as.vector(pop1)
