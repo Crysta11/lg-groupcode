@@ -10,7 +10,7 @@ require(Matrix)
 	#Pathway to Jane's test output folder
 	#setwd("/Users/Jane/Desktop/LG/LDG_Output_slurm1")
 	#Read in the genetic distance files--this assumes that only the genetic distance and extant files have T_
-	allfiles = list.files(pattern="T_1")
+	allfiles = list.files(pattern="T_1_IBR")
 	extantfiles = list.files(pattern='Extant')
 	genetics <-allfiles[!allfiles %in% extantfiles]
 
