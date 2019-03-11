@@ -309,7 +309,7 @@ directories<-mixedsort(list.dirs(,recursive=FALSE))
 Output_directory<-"/scratch/cgantz/LDG_Output"
 
 #Choose which generations to compute
-Iterative_gens<-seq(275,1651,25)
+Iterative_gens<-seq(275,500,25)
 Total_Gens<-c(150:250, Iterative_gens)
 
 #####################################################################
