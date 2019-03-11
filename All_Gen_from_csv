@@ -335,7 +335,7 @@ GD_function<-function(i){
   ###############################
   #####Pairwise Fst##### #PopGenReport
   Gen_csv<-read.csv(Extant_Pop_Files[i])
-  GenG<-df2genind(Gen_csv[,9:1508],ncode=3L,ind.names=Gen_csv[,4],pop=Gen_csv[,1], ploidy=2))
+  GenG<-df2genind(Gen_csv[,9:1508],ncode=3L,ind.names=Gen_csv[,4],pop=Gen_csv[,1], ploidy=2)
 
   Fst<-pairwise.fstb(GenG)
   write.table(Fst,file = paste0(Output_directory,"/",trial,"_",method,"_Fst_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
