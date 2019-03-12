@@ -298,6 +298,8 @@ Cavalli_kinship <- function(x, diag = FALSE, upper = FALSE) {
 
 dir.create("/scratch/cgantz/LDG_Output")
 
+setwd("/scratch/cgantz/gentest_slurm1")
+
 #ID the directory where all the CDPOP output folders are contained
 Master_directory<-getwd()
 
