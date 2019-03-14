@@ -318,8 +318,6 @@ Total_Gens<-c(151:251, Iterative_gens)
 #####################################################################
 #Create the Genetic Distance Function that will write all the code###
 
-
-
 GD_function<-function(i){ 
   split <-strsplit(Extant_Pop_Files[i],split="_")
   
@@ -354,9 +352,9 @@ GD_function<-function(i){
   
   #######PCA##### #adegenet
   
-  population<-genind2genpop(GenG)
+  population_gen<-genind2genpop(GenG)
   
-  PCA <- scaleGen(population, scale=FALSE)
+  PCA <- scaleGen(population_gen, scale=FALSE)
   
   pca<-dudi.pca(PCA, center=FALSE, scale=FALSE,scannf=FALSE,nf=2)
   pca.dist<-data.frame(pca$li)
