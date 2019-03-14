@@ -170,7 +170,7 @@ GD_function <- function(i) {
   write.table(SurvivingPops,file = paste0(Output_directory,"/",trial,"_",method,"_Extant_",map,"_",mcrun,"_",generation,".csv"),row.names=FALSE,col.names=FALSE,sep=",")
   
   # Nei's D From adegenet (?) ----------------------------------
-  NeiD <- as.matrix(dist.genpop(population_gen, method = 1, diag = TRUE, upper = TRUE), ncol = 40)
+  NeiD <- as.matrix(dist.genpop(population_gen, method = 1, diag = TRUE, upper = TRUE), ncol = length(SurvivingPops))
   
   write.table(NeiD, file = paste0(output_dir, "/", trial, "_", method, "_NeiD_", map, "_", mcrun,
   "_", generation, ".csv"), row.names = FALSE, col.names = FALSE, sep = ",")
