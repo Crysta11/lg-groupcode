@@ -1,0 +1,28 @@
+a<-read.csv(choose.files()) #read in output from correct analysis
+head(a)
+b_grav<-read.csv(choose.files()) #read in output of incorrect analysis
+library(ggplot2)
+install.packages('gridExtra')
+library(gridExtra)
+
+qplot(generation, RMSE,colour = genetic, data=a)
+
+qplot(generation, RMSE,colour = genetic, data=b_grav)
+
+#change RMSE to deltaAIC for different graphs
+plot1<-ggplot(a, aes(x=generation, y= RMSE, color=genetic,group=genetic)) +
+  geom_point() + 
+  geom_smooth(method='loess', aes(fill=genetic))+
+  ggtitle("IBR")+
+  ylim(0,1.5)+
+  xlim(150,500)
+
+plot2<-ggplot(b_grav, aes(x=generation, y= RMSE, color=genetic,group=genetic)) +
+  geom_point() + 
+  geom_smooth(method='loess', aes(fill=genetic))+
+  ggtitle("Gravity")+
+  ylim(0,1.5)+
+  xlim(150,500)
+
+
+grid.arrange(plot1,plot2,ncol=2)
