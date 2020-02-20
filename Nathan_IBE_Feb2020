@@ -113,9 +113,9 @@ CDPOP_dirs<-list.files(CDPOP_input)
 allfiles = list.files(file_dir)
 extantfiles = list.files(pattern ='Extant')
 genetics <-allfiles[!allfiles %in% extantfiles]
-OUT<-matrix(NA,ncol=15)
-colnames(OUT)<-c("trial","driver","genetic","con","hab","mc","generation","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2","RMSE")
-
+OUT<-matrix(NA,ncol=19)
+colnames(OUT)<-c("trial","driver","genetic","con","hab","mc","generation","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2","RMSE","Intercept",
+	"Intercept_coefficient","Intercept_tstatistic","Intercept_tpvalue")
 for(i in genetics){
 	split <-strsplit(i,split="_")
  	trial=as.numeric(split[[1]][2])
@@ -143,11 +143,6 @@ for(i in genetics){
 ##execute PopGenReport's analysis based on Wang et al. 2013 Evolution
 	a<-lgrMMRR(Gen, EnvCost,eucl.mat= NULL, nperm = 999)
 
-c<-data.frame(a$mmrr.tab)
-c[which(c$layer=='X1'),]
-a$mmrr.tab[a$mmrr.tab$layer<=X1,]
-df[df$aged <= df$laclen, ] 
-
 ##The r^2 value and p-value are stored in the first line of output
 ##becuase we don't need the equations for the output, just extract the first line of output for each lgrMMR run
 ## and save that into the output matrix
@@ -165,5 +160,3 @@ write.csv(OUT, paste0(out_dir,"/","T_",trial,"_IBE_",driver1,"_",con,"_",hab,"_m
 
 }
 
-setwd(file_dir)
-sapply(paste0(genetics),IBE_Analysis)
