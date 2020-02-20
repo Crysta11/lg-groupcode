@@ -4,6 +4,13 @@ library(GeNetIt)
 require(Matrix)
 require(dplyr)
 
+#We will establish all directories here. Transferance between machines/runs only needs to be changed here.
+file_dir<-"C:\\Users\\nba2\\Desktop\\LDG_Output_T1_IBR_0.50.5_MC6-10"
+CDPOP_input<-"C:\\Users\\nba2\\Desktop\\CD_XY_files"
+out_dir<-"C:/Users/nba2/Desktop/DGS_2016_IBE_output"
+
+#####################################################
+#####################################################
 
 ###We will recreate this function to also give us RMSE
 
@@ -95,12 +102,6 @@ return(list(mmrr.tab=mmrr.mat))
 ##Code adapted from LDG-2016 course week 7 supplementary materials
 
 
-#We will establish all directories here. Transferance between machines/runs only needs to be changed here.
-file_dir<-"C:\\Users\\nba2\\Desktop\\LDG_Output_T1_IBR_0.50.5_MC6-10"
-CDPOP_input<-"C:\\Users\\nba2\\Desktop\\CD_XY_files"
-out_dir<-"C:/Users/nba2/Desktop/DGS_2016_IBE_output"
-
-
 ####################################
 ####################################
 Dirs<-list.files(file_dir)
@@ -142,19 +143,24 @@ for(i in genetics){
 ##execute PopGenReport's analysis based on Wang et al. 2013 Evolution
 	a<-lgrMMRR(Gen, EnvCost,eucl.mat= NULL, nperm = 999)
 
+c<-data.frame(a$mmrr.tab)
+c[which(c$layer=='X1'),]
+a$mmrr.tab[a$mmrr.tab$layer<=X1,]
+df[df$aged <= df$laclen, ] 
 
 ##The r^2 value and p-value are stored in the first line of output
 ##becuase we don't need the equations for the output, just extract the first line of output for each lgrMMR run
 ## and save that into the output matrix
 
-	b<-cbind(trial,driver,genetic,con,hab,mc,generation,a$mmrr.tab[1,])
-	colnames(b)<-c("trial","driver","genetic","con","hab","mc","generation","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2","RMSE")
+	b<-cbind(trial,driver,genetic,con,hab,mc,generation,a$mmrr.tab[which(a$mmrr.tab$layer=='X1'),1:4],a$mmrr.tab[1,5:8],a$mmrr.tab[which(a$mmrr.tab$layer=='Intercept'),1:4])
+	colnames(b)<-c("trial","driver","genetic","con","hab","mc","generation","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2","RMSE","Intercept",
+	"Intercept_coefficient","Intercept_tstatistic","Intercept_tpvalue")
 	print(b)
 	OUT<-rbind(OUT,b)
 
 }
 
-OUT<-NA.omit(OUT)
+OUT<-na.omit(OUT)
 write.csv(OUT, paste0(out_dir,"/","T_",trial,"_IBE_",driver1,"_",con,"_",hab,"_mc_",mc,".csv"))
 
 }
