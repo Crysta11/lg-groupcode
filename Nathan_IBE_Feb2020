@@ -5,7 +5,7 @@ require(Matrix)
 require(dplyr)
 
 #We will establish all directories here. Transferance between machines/runs only needs to be changed here.
-file_dir<-"C:\\Users\\nba2\\Desktop\\LDG_Output_T1_IBR_0.50.5_MC6-10"
+all_dirs<-list.files("C:/Users/nba2/Desktop/DGS_genetics")
 CDPOP_input<-"C:\\Users\\nba2\\Desktop\\CD_XY_files"
 out_dir<-"C:/Users/nba2/Desktop/DGS_2016_IBE_output"
 
@@ -100,18 +100,20 @@ return(list(mmrr.tab=mmrr.mat))
 }
 
 ##Code adapted from LDG-2016 course week 7 supplementary materials
-
-
 ####################################
 ####################################
+z<-1
+for(z in 1:length(all_dirs)){
+file_dir<-paste0("C:\\Users\\nba2\\Desktop\\DGS_genetics\\",all_dirs[z])
 Dirs<-list.files(file_dir)
+print(length(Dirs))
 
 CDPOP_dirs<-list.files(CDPOP_input)
 
 ##first directory are cost distances
 
 allfiles = list.files(file_dir)
-extantfiles = list.files(pattern ='Extant')
+extantfiles = list.files(file_dir,pattern ='*Extant*')
 genetics <-allfiles[!allfiles %in% extantfiles]
 OUT<-matrix(NA,ncol=19)
 colnames(OUT)<-c("trial","driver","genetic","con","hab","mc","generation","layer","coefficient","tstatistic","tpvalue","Fstat","Fpvalue","r2","RMSE","Intercept",
@@ -127,13 +129,15 @@ for(i in genetics){
   	hab=as.numeric(split[[1]][8])
   	mc=as.numeric(split[[1]][10])
   	generation=as.numeric(strsplit(split[[1]][12],split="[.]")[[1]][1])
-
+print(split)
 #we will only be reading in the distance matric
 	DistMat<-as.matrix(read.csv(paste0(CDPOP_input,"/IBE_CD_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),header=FALSE))
+	dim(DistMat)/40
 	PopDist<-DistMat[1:40,1:40]
-
+trouble<-paste0(file_dir,"/",i)
+trouble
 	Gen<-as.matrix(read.csv(paste0(file_dir,"/",i),header=FALSE))
-
+	dim(Gen)
 	PopDist1 <- scale(PopDist)
 	Gen<-scale(Gen)
 
@@ -154,7 +158,6 @@ for(i in genetics){
 	OUT<-rbind(OUT,b)
 
 }
-
 OUT<-na.omit(OUT)
 write.csv(OUT, paste0(out_dir,"/","T_",trial,"_IBE_",driver1,"_",con,"_",hab,"_mc_",mc,".csv"))
 
