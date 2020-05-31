@@ -1,0 +1,446 @@
+###############
+###############
+#Required Packages
+
+require(GeNetIt)
+require(Matrix)
+library(PopGenReport)
+library(gtools)
+library(GeNetIt)
+require(Matrix)
+require(dplyr)
+
+#######################
+#######################
+#Assign Directories
+
+genetic_dir<-("C:/Users/Nathan/Desktop/DGS_2016_Genetics")
+coord_dir<-("F:\\LDGProject\\CD_XY_files")
+out_dir<-"C:/Users/Nathan/Desktop/DGS_2016_IBE_output"
+
+
+coord_files<-list.files(coord_dir)
+genetic_trials<-list.files(genetic_dir)
+
+#############
+#############
+#Create Functions
+
+##We will recreate these functions to also give us RMSE
+
+#modified gravity code
+
+gravity <- function(y, x, d, group, data, ln = TRUE, constrained = TRUE, ...) {
+  if( missing(d) ) stop("Distance must be included")
+    if( missing(x)) { x = d }
+      x <- unique(c(x, d))
+  gdata <- data[,c(group, y, x)]
+  gdata <- nlme::groupedData( stats::as.formula(paste(paste(y, 1, sep=" ~ "), 
+                              group, sep=" | ")), data = gdata) 
+	  if(ln == TRUE) { 
+	   gdata[,x] <- log(abs(gdata[,x]))
+	   gdata[,y] <- log(abs(gdata[,y]))
+       gdata[gdata == -Inf] <- 0 
+       gdata[gdata == Inf] <- 0  		
+	  } 		   		
+    fmla <- stats::as.formula(paste(paste(y, "~", sep=""), paste(x, collapse= "+")))       	
+      if (constrained == FALSE) { 
+        print("Running unconstrained gravity model, defaulting to OLS. Please check assumptions")
+       gvlmm <- stats::lm(fmla, data = gdata, ...)
+	     gvaic <- stats::AIC(gvlmm)
+	 RMSE<-sqrt(mean(residuals(gvlmm)^2))
+    gm <- list(formula=fmla, gravity=gvlmm, AIC=gvaic, x=gdata[,x], y=gdata[,y],
+	           fit = stats::fitted(gvlmm),RMSE=RMSE ) 		   
+       } else {	   
+	if(!"groupedData" %in% class(gdata)) 
+	  stop ("Data must be a groupedData object for singly-constrained gravity model")
+	print("Running singly-constrained gravity model")
+	    gvlmm <- nlme::lme(fmla, stats::as.formula(paste("random = ~1", group, sep=" | ")), 
+		                   data = gdata, ...)
+        gvaic <- stats::AIC(gvlmm)
+	  RMSE<-sqrt(mean(residuals(gvlmm)^2))
+        gm <- list(formula = fmla, gravity = gvlmm, AIC = gvaic, log.likelihood = gvlmm$logLik, 
+		           x = gdata[,x], y = gdata[,y], groups = gdata[,group], fit = stats::fitted(gvlmm),RMSE=RMSE)   	  
+    }
+	class(gm) <- "gravity"
+	class(RMSE)<-"list"
+  return(c(gm,RMSE))
+}	
+
+###############################
+###############################
+#Modified IBE code
+
+lgrMMRR <- function(gen.mat, cost.mats, eucl.mat=NULL, nperm=999)
+{
+
+##### MMRR function of Wang
+# MMRR performs Multiple Matrix Regression with Randomization analysis
+# Y is a dependent distance matrix
+# X is a list of independent distance matrices (with optional names)
+
+MMRR<-function(Y,X,nperm=999){
+	#compute regression coefficients and test statistics
+	nrowsY<-nrow(Y)
+	y<-unfold(Y)
+	if(is.null(names(X)))names(X)<-paste("X",1:length(X),sep="")
+        Xmats<-sapply(X,unfold)   
+        fit<-lm(y~Xmats)
+	coeffs<-fit$coefficients
+	summ<-summary(fit)
+	r.squared<-summ$r.squared
+	tstat<-summ$coefficients[,"t value"]
+	Fstat<-summ$fstatistic[1]
+	tprob<-rep(1,length(tstat))
+	Fprob<-1
+	RMSE<- sqrt(mean((fitted.values(fit) - Xmats )^2))
+
+	#perform permutations
+	for(i in 1:nperm){
+		rand<-sample(1:nrowsY)
+		Yperm<-Y[rand,rand]
+		yperm<-unfold(Yperm)
+		fit<-lm(yperm~Xmats)
+		summ<-summary(fit)
+                Fprob<-Fprob+as.numeric(summ$fstatistic[1]>=Fstat)
+                tprob<-tprob+as.numeric(abs(summ$coefficients[,"t value"])>=abs(tstat))
+	}
+
+	#return values
+	tp<-tprob/(nperm+1)
+	Fp<-Fprob/(nperm+1)
+	names(r.squared)<-"r.squared"
+	names(coeffs)<-c("Intercept",names(X))
+	names(tstat)<-paste(c("Intercept",names(X)),"(t)",sep="")
+	names(tp)<-paste(c("Intercept",names(X)),"(p)",sep="")
+	names(Fstat)<-"F-statistic"
+	names(Fp)<-"F p-value"
+	names(RMSE)<-"RMSE"
+	return(list(r.squared=r.squared,
+		coefficients=coeffs,
+		tstatistic=tstat,
+		tpvalue=tp,
+		Fstatistic=Fstat,
+		Fpvalue=Fp, RMSE=RMSE))
+}
+
+# unfold converts the lower diagonal elements of a matrix into a vector
+# unfold is called by MMRR
+
+unfold<-function(X){
+	x<-vector()
+	for(i in 2:nrow(X)) x<-c(x,X[i,1:i-1])
+	return(x)
+}
+
+
+
+mats <- cost.mats
+if (!is.null(eucl.mat)) mats$Euclidean <- eucl.mat
+
+
+res <- MMRR(gen.mat, mats, nperm=nperm)
+
+mmrr.mat <- data.frame(layer=names(res$coefficients), coefficient= res$coefficients, tstatistic=res$tstatistic, tpvalue = res$tpvalue, Fstat= NA, Fpvalue = NA, r2=NA, RMSE=NA )
+
+row.names(mmrr.mat)=NULL
+mmrr.mat <- mmrr.mat[order(mmrr.mat$tpvalue),]
+mmrr.mat$Fstat[1] <- res$Fstatistic
+mmrr.mat$Fpvalue[1] <- res$Fpvalue
+mmrr.mat$r2[1] <- res$r.squared
+mmrr.mat$RMSE[1]<-res$RMSE
+
+
+
+
+return(list(mmrr.tab=mmrr.mat))
+}
+###############################################################
+###############################################################
+###############################################################
+###############################################################
+
+#start analyses#
+
+#Create the output dataframe
+
+out<-matrix(NA,ncol=34)
+
+colnames(out)<-	
+	#File information
+	c("trial","driver","genetic","con","hab","mc","generation",
+	
+	#Gravity Model and GLMM model results
+	"Grav_RMSE","Grav_RMSENull","Grav_deltaAIC","GLMM_RMSE","GLMM_RMSENull","GLMM_deltaAIC",
+	
+	#gravity and glmm coefficients
+	"Grav_Hab_coefficient","Grav_IBR_coefficient","Grav_IBD_coefficent",
+	"Grav_Hab_null_coefficient","Grav_IBD_null_coefficient",
+	"GLMM_IBR_coefficient","GLMM_IBD_coefficient","GLMM_IBR_null_coefficient","GLMM_IBD_null_coefficient",
+
+	#IBE output
+	"IBE_layer","IBE_coefficient","IBE_tstatistic","IBE_tpvalue","IBE_Fstat","IBE_Fpvalue","IBE_r2",
+	"IBE_RMSE","IBE_Intercept","IBE_Intercept_coefficient","IBE_Intercept_tstatistic","IBE_Intercept_tpvalue")
+
+
+#######################
+#######################
+#separate the extant files from the genetic files
+
+for(z in 1:length(genetic_trials){
+
+	all.files<-list.files(paste0(genetic_dir,"/",genetic_trials[1]))
+	extantfiles = list.files(paste0(genetic_dir,"/",genetic_trials[1]),pattern ='*Extant*')
+	genetics <-all.files[!all.files %in% extantfiles]
+
+#######################
+
+
+#start forloop
+
+		for(i in genetics){
+
+##Split the naming structure so we can manipualate corresponding files
+
+			split <-strsplit(i,split="_")
+ 			trial=as.numeric(split[[1]][2])
+  			driver=split[[1]][3]
+  			driver1=strsplit(driver,split="1")
+  			driver1=driver1[[1]][1]
+  			genetic=split[[1]][4]
+  			con=as.numeric(split[[1]][6])
+  			hab=as.numeric(split[[1]][8])
+  			mc=as.numeric(split[[1]][10])
+		  	generation=as.numeric(strsplit(split[[1]][12],split="[.]")[[1]][1])
+
+			print(split)
+
+
+#################
+#################
+
+#IBE Files
+		IBE_DistMat<-as.matrix(read.csv(paste0(coord_dir,"/IBE_CD_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),header=FALSE))
+		IBE_PopDist<-IBE_DistMat[1:40,1:40]
+
+		IBE_IBD_DistMat<-as.matrix(read.csv(paste(c(coord_dir,"//IBE_nullburnin_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+		IBE_IBD_PopDist<-IBE_IBD_DistMat[1:40,1:40]
+
+#IBR Files-I don't think these are needed.
+
+		#IBR_DistMat<-as.matrix(read.csv(paste(c(coord_dir,"/","IBR_CD_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+
+		#IBR_PopDist<-as.matrix(IBR_DistMat[!duplicated(IBR_DistMat),!duplicated(IBR_DistMat)])
+
+		#IBR_IBD_DistMat<-as.matrix(read.csv(paste(c(coord_dir,"//IBR_IBDburnin_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+
+		#IBR_IBD_PopDist<-as.matrix(IBR_IBD_DistMat[!duplicated(IBR_IBD_DistMat),!duplicated(IBR_IBD_DistMat)])
+
+
+#Gravity Files
+
+		Grav_DistMat<-as.matrix(read.csv(paste(c(coord_dir,"/","Grav_CD_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+
+		Grav_PopDist<-as.matrix(Grav_DistMat[!duplicated(Grav_DistMat),!duplicated(Grav_DistMat)])
+
+		Grav_IBD_DistMat<-as.matrix(read.csv(paste(c(coord_dir,"//Grav_IBDburnin_Trial_",trial,"_con_",con,"_hab_",hab,"_.csv"),sep="",collapse=""),header=FALSE))
+	
+		Grav_IBD_PopDist<-as.matrix(Grav_IBD_DistMat[!duplicated(Grav_IBD_DistMat),!duplicated(Grav_IBD_DistMat)])
+
+
+################
+################
+
+#back-calculate population size for the gravity models. 
+	#this relies on the population size of the gravity files, so will use the gravity distance input file.
+	
+		unique_pop = unique(Grav_DistMat[,1])
+	  	table_pop = rbind(label=unique_pop, count=sapply(unique_pop,function(x)sum(File_DistMat[,1]==x)))
+	  	PopSize<-table_pop[2,] #extract the counted totals to create the PopSize vector
+	  	habitat<-(PopSize-10)/600
+	  	habitat1 <- t(matrix(c(habitat),length(habitat),length(habitat)))
+
+################
+################
+#Read in the genetic distance matrix
+
+	  	Gen <-as.matrix(read.csv(file=paste0(genetic_dir,"/",genetic_trials[z],"/",genetics[i]), header=FALSE))
+		
+######################
+######################
+##Mixed Effect and Gravity Model
+
+#Data set up
+	#format the genetic distances
+
+		IBR_Grav_gen<-Gen
+		diag(IBR_Grav_gen)<-NA
+		IBR_Grav_gen<-as.vector(IBR_Grav_gen)
+		IBR_Grav_gen<-na.omit(IBR_Grav_gen)
+
+	#Create a population ID Matrix
+
+    		extant.pop <-c(1:40)
+		pop1 <- t(matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+		diag(pop1)<-NA
+		pop1<-as.vector(pop1)
+		pop1<-na.omit(pop1)
+
+		#Create vector for the to population
+
+		pop2 <- (matrix(c(extant.pop),length(extant.pop),length(extant.pop)))
+		diag(pop2)<-NA
+		pop2<-as.vector(pop2)
+		pop2<-na.omit(pop2)
+
+####################
+#Mixed Effect and Gravity Model Parameter Structure 
+
+#The distance parameters are the same for IBR and Gravity models, so we'll only use one to decrease processing
+#scale each parameter
+
+		Grav_PopDist1<-Grav_PopDist[extant.pop,extant.pop]
+		diag(Grav_PopDist1)<-NA
+		Grav_PopDist1<-as.vector(Grav_PopDist1)
+		Grav_PopDist1<-na.omit(Grav_PopDist1)
+		Grav_PopDist1 <- scale(Grav_PopDist1)     
+
+#Create vector for distance parameter
+
+		Grav_IBD_PopDist1<-Grav_IBD_PopDist[extant.pop,extant.pop]
+		diag(Grav_IBD_PopDist1)<-NA
+		Grav_IBD_PopDist1<-as.vector(Grav_IBD_PopDist1)
+		Grav_IBD_PopDist1<-na.omit(Grav_IBD_PopDist1)
+		Grav_IBD_PopDist1<-scale(Grav_IBD_PopDist1)	
+
+		
+
+#Create vector for the habitat parameter (this is for the gravity model)
+
+		diag(habitat1)<-NA
+		habitat1<-as.vector(habitat1)
+		habitat1<-na.omit(habitat1)
+		Hab<-scale(habitat1)
+
+#assign each to/from pair a random number for the null matrices currently
+		
+		Null<-sample(1:length(habitat1), length(habitat1), replace=F)
+		Null<-scale(Null)	
+
+#Modify the genetic matrix to be a vector
+
+		IBR_Grav_Gen<-Gen
+		diag(IBR_Grav_Gen)<-NA
+		IBR_Grav_Gen<-as.vector(IBR_Grav_Gen)
+		IBR_Grav_Gen<-na.omit(IBR_Grav_Gen)
+		
+
+#create a dataframe of the parameters
+		
+		Distdf <- data.frame(pop1, pop2, Grav_PopDist1, Grav_IBD_PopDist1, Hab, IBR_Grav_Gen, Null)
+
+##############################
+#Run the gravity and glmm models
+
+#Gravity model
+
+		mod_C<-gravity(y="IBR_Grav_Gen",x=c("Hab","Grav_PopDist1"),d="Grav_IBD_PopDist1",group="pop1",data=Distdf,ln=TRUE,constrained=TRUE)
+		mod_NULL<-gravity(y="IBR_Grav_Gen",x="Null",d="Grav_IBD_PopDist1",group="pop1",data=Distdf,ln=TRUE,constrained=TRUE)
+
+#Mixed model
+
+		mod_mixed<-gravity(y="IBR_Grav_Gen",x="Grav_PopDist1",d="Grav_IBD_PopDist1",group="pop1",data=Distdf, ln=FALSE, constrained=TRUE)
+		mod_mixed_null<-gravity(y="IBR_Grav_Gen", x="Null",d="Grav_IBD_PopDist1",group="pop1", data=Distdf, ln=FALSE, constrained=TRUE)
+
+##############################
+#Parameter Extraction
+
+#Extract the RMSE value from the model-gravity code has been adapted to provide RMSE output uniquely
+
+		RootRsq_C<-mod_C$RMSE
+		RootRsq_NULL<-mod_NULL$RMSE
+		RootRsq_mixed<-mod_mixed$RMSE
+		RootRsq_mixed_null<-mod_mixed_null$RMSE
+
+#extract coefficient values
+
+		Hab_coef_C<-coefficients(mod_C$gravity,complete=TRUE)[1,2:4]
+		Hab_coef_NULL<-coefficients(mod_NULL$gravity,complete=TRUE)[1,2:3]
+		Hab_coef_mixed<-coefficients(mod_mixed$gravity,complete=TRUE)[1,2:3]
+		Hab_coef_mixed_null<-coefficients(mod_mixed_null$gravity,complete=TRUE)[1,2:3]
+
+#calculate delta AIC
+
+		delta.aic.grav<-mod_C$AIC-mod_NULL$AIC
+		delta.aic.glmm<-mod_mixed$AIC-mod_mixed_null$AIC
+
+#######################
+#######################
+#IBE Analysis
+		IBE_PopDist1 <- scale(IBE_PopDist)
+		IBE_Gen<-scale(Gen)
+
+#because we only have one parameter we've simulated impacting dispersal for IBE, we list it as the Environmental cost
+
+		EnvCost<-list(IBE_PopDist1)
+
+#execute PopGenReport's analysis based on Wang et al. 2013 Evolution
+
+		IBE_Results<-lgrMMRR(Gen, EnvCost,eucl.mat= NULL, nperm = 999)
+
+#The r^2 value and p-value are stored in the first line of output
+#becuase we don't need the equations for the output, just extract the first line of output for each lgrMMR run
+# and save that into the output matrix
+
+######################
+######################
+#Combine all the outputs into a single line
+
+	output_grav<-cbind(trial,driver1,genetic,con,hab,mc,generation,
+		RootRsq_C,RootRsq_NULL,delta.aic.grav,
+		RootRsq_mixed,RootRsq_mixed_null,delta.aic.glmm)
+	
+	output_habitat<-cbind(Hab_coef_C,Hab_coef_NULL,Hab_coef_mixed,Hab_coef_mixed_null)
+
+	output_IBE<-cbind(IBE_Results$mmrr.tab[which(IBE_Results$mmrr.tab$layer=='X1'),1:4],
+		IBE_Results$mmrr.tab[1,5:8],IBE_Results$mmrr.tab[which(IBE_Results$mmrr.tab$layer=='Intercept'),1:4])
+
+	output<-cbind(output_grav,output_habitat,output_IBE)
+
+	colnames(output)<-
+	
+		#File information
+
+		c("trial","driver","genetic","con","hab","mc","generation",
+	
+		#Gravity Model and GLMM model results
+
+		"Grav_RMSE","Grav_RMSENull","Grav_deltaAIC","GLMM_RMSE","GLMM_RMSENull","GLMM_deltaAIC",
+	
+		#gravity and glmm coefficients
+
+		"Grav_Hab_coefficient","Grav_IBR_coefficient","Grav_IBD_coefficent",
+		"Grav_Hab_null_coefficient","Grav_IBD_null_coefficient",
+		"GLMM_IBR_coefficient","GLMM_IBD_coefficient","GLMM_IBR_null_coefficient","GLMM_IBD_null_coefficient",
+
+		#IBE output
+
+		"IBE_layer","IBE_coefficient","IBE_tstatistic","IBE_tpvalue","IBE_Fstat","IBE_Fpvalue","IBE_r2",
+		"IBE_RMSE","IBE_Intercept","IBE_Intercept_coefficient","IBE_Intercept_tstatistic","IBE_Intercept_tpvalue")
+		
+	  out<-rbind(out,output)
+	  print(i)
+
+	}	
+		out
+	out<-na.omit(out)
+
+write.csv(out, paste(c(out_dir,"/",,trial,"_Grav_",driver1,"_",con,"_",hab,"_mc_",mc,".csv"),sep="",collapse=""), row.names = FALSE)
+}
+
+
+
+
+
+
+
