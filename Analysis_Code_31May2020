@@ -432,12 +432,12 @@ for(z in 1:length(genetic_trials){
 	  print(i)
 
 	}	
-}
+
 		out
 	out<-na.omit(out)
 
 
-write.csv(out, paste(c(out_dir,"/",trial,"_",driver1,"_",con,"_",hab,"_mc_",mc,".csv"),sep="",collapse=""), row.names = FALSE)
+write.csv(out, paste(c(out_dir,"/T_",trial,"_",driver1,"_",con,"_",hab,"_mc_",mc,".csv"),sep="",collapse=""), row.names = FALSE)
 
 
 
