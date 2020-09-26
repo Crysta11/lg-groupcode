@@ -1,0 +1,35 @@
+
+library(boxr)
+
+box_auth(client_id = "", client_secret = "")
+box_setwd()
+genetic_ids<-data.frame(box_ls())$id
+
+setwd("/Volumes/GoogleDrive/My Drive/DGS_2016_MixedEffects/FullAnalyses/graphs")
+
+#function to read the files on box 
+fun <- function(file){
+  box_dl(file, overwrite = TRUE)
+  print(file)
+}
+lapply(genetic_ids,FUN=fun) #apply the function for all the analysis output files
+
+dir <- getwd()
+gnomefiles <- list.files(dir)
+#There's an R icon file, so this gets rid of that
+gnomefiles <- gnomefiles[2:180]
+#giant data frame
+gnome <- sapply(gnomefiles, read.csv, simplify=FALSE) %>% 
+  bind_rows()
+
+
+gnome1 <- gnome[gnome$trial==1,]
+gnome1150 <- gnome1[gnome1$generation<=200,]
+
+library(ggplot2)
+
+p <- ggplot(gnome1150, aes(generation, Grav_RMSE, color=driver))
+p <- p + geom_point(aes(shape=genetic)) + facet_grid(con ~ hab)
+p <- p + theme_bw()
+p  
+  
