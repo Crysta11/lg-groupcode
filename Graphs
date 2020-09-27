@@ -25,12 +25,12 @@ gnome <- sapply(gnomefiles, read.csv, simplify=FALSE) %>%
 
 #subset the data as needed
 gnome1 <- gnome[gnome$trial==1,]
-gnome1150 <- gnome1[gnome1$generation<=200,]
+gnome1200 <- gnome1[gnome1$generation<=200,]
 
 library(ggplot2)
 
-p <- ggplot(gnome1150, aes(generation, Grav_RMSE, color=driver))
-p <- p + geom_point(aes(shape=genetic)) + facet_grid(con ~ hab)
+p <- ggplot(gnome1200, aes(generation, Grav_RMSE, color=genetic))
+p <- p + geom_point(aes(group=genetic, shape=driver)) + facet_grid(con ~ hab)
 p <- p + theme_bw()
 p  
   
