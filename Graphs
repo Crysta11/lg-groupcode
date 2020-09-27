@@ -5,6 +5,7 @@ box_auth(client_id = "", client_secret = "")
 box_setwd()
 genetic_ids<-data.frame(box_ls())$id
 
+#This is Jane's local file folder location, change as needed
 setwd("/Volumes/GoogleDrive/My Drive/DGS_2016_MixedEffects/FullAnalyses/graphs")
 
 #function to read the files on box 
@@ -16,13 +17,13 @@ lapply(genetic_ids,FUN=fun) #apply the function for all the analysis output file
 
 dir <- getwd()
 gnomefiles <- list.files(dir)
-#There's an R icon file, so this gets rid of that
+#There's an R icon file, so this gets rid of that, the total file number will change as more data are analyzed
 gnomefiles <- gnomefiles[2:180]
 #giant data frame
 gnome <- sapply(gnomefiles, read.csv, simplify=FALSE) %>% 
   bind_rows()
 
-
+#subset the data as needed
 gnome1 <- gnome[gnome$trial==1,]
 gnome1150 <- gnome1[gnome1$generation<=200,]
 
