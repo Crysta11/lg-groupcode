@@ -23,14 +23,39 @@ gnomefiles <- gnomefiles[2:180]
 gnome <- sapply(gnomefiles, read.csv, simplify=FALSE) %>% 
   bind_rows()
 
-#subset the data as needed
-gnome1 <- gnome[gnome$trial==1,]
-gnome1200 <- gnome1[gnome1$generation<=200,]
-
 library(ggplot2)
+library(viridis)
+library(RColorBrewer)
 
-p <- ggplot(gnome1200, aes(generation, Grav_RMSE, color=genetic))
-p <- p + geom_point(aes(group=genetic, shape=driver)) + facet_grid(con ~ hab)
-p <- p + theme_bw()
-p  
+#subset the data as needed
+gnome1 <- gnome %>% filter(trial==1, generation <= 200, genetic=="Dkf", driver=="Grav")
+
+#Grav MC runs
+p <- ggplot(gnome1, aes(generation, Grav_deltaAIC, color=factor(mc)))
+p <- p + geom_point(size=0.7) + scale_color_brewer(palette = "Spectral") 
+p <- p + theme_bw()+ facet_grid(con ~ hab) 
+p
+
+gnome2 <- gnome %>% filter(trial==1, generation <= 200, genetic=="Dkf", driver=="IBR")
+#IBR MC runs
+p <- ggplot(gnome2, aes(generation, Grav_deltaAIC, color=factor(mc)))
+p <- p + geom_point(size=0.7) + scale_color_brewer(palette = "Spectral") 
+p <- p + theme_bw()+ facet_grid(con ~ hab) 
+p
+
+gnome3 <- gnome %>% filter(trial==1, generation <= 200, genetic=="Dkf")
+#Grav and IBR MC runs
+p <- ggplot(gnome3, aes(generation, Grav_deltaAIC, color=driver))
+p <- p + geom_point(aes(group=driver),size=0.7) + scale_color_viridis(discrete = TRUE, option = "C")
+p <- p + theme_bw()+ facet_grid(con ~ hab) 
+p
+
+
+gnome4 <- gnome %>% filter(generation <= 200, genetic=="Dkf", con==0.2, hab==0.2)
+#mc x trial, Grav and IBR
+p <- ggplot(gnome4, aes(generation, Grav_deltaAIC, color=factor(driver)))
+p <- p + geom_point(aes(group=driver),size=0.7) + scale_color_brewer(palette = "Set1") 
+p <- p + theme_bw()+ facet_grid(trial ~ mc) 
+p
+
   
