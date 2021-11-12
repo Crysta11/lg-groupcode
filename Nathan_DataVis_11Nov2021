@@ -1,0 +1,46 @@
+
+library(ggplot2)
+library(viridis)
+library(RColorBrewer)
+install.packages('dplyr')
+library(dplyr)
+gnome<-read.csv(choose.files())
+colnames(gnome)
+
+#subset the data as needed
+gnome1 <- gnome %>% filter(trial==1, generation <= 200,genetic!="PCA", driver=="IBR")
+gnome1 <- gnome %>% filter(trial==1, generation <= 10,driver=="IBR")
+
+
+#IBR RMSE runs
+p <- ggplot(gnome1, aes(generation, GLMM_RMSE, color=genetic))
+p <- p + geom_smooth(method='loess') +scale_color_brewer(palette = "Spectral") 
+p <- p + theme_bw()+ facet_grid(con ~ hab) + labs(tag='Contagion')+
+	theme(legend.box.margin=margin(l=20),
+        plot.tag=element_text(angle=-90),
+        plot.tag.position=c(.85, 0.5))
+p
+
+
+#IBR Coefficient
+p <- ggplot(gnome1, aes(generation, GLMM_IBR_coefficient, color=genetic))
+p <- p + geom_smooth(method='loess') + scale_color_brewer(palette = "Spectral") 
+p <- p + theme_bw()+ facet_grid(con ~ hab) + labs(tag='Contagion')+
+	theme(legend.box.margin=margin(l=20),
+        plot.tag=element_text(angle=-90),
+        plot.tag.position=c(.85, 0.5))
+p
+
+
+#IBR deltaAIC
+p <- ggplot(gnome1, aes(generation, GLMM_deltaAIC, color=factor(genetic)))
+p <- p + geom_smooth(method='loess') + scale_color_brewer(palette = "Spectral") 
+p <- p + theme_bw()+ facet_grid(con ~ hab) + labs(tag='Contagion')+
+	theme(legend.box.margin=margin(l=20),
+        plot.tag=element_text(angle=-90),
+        plot.tag.position=c(.85, 0.5))
+p
+
+
+
+
